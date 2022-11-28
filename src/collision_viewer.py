@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 '''
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
@@ -10,6 +10,15 @@ AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 '''
 ######################################################################################################
 
+import os
+import sys
+
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/Spacetime")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/Utils")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/urdfs")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/GROOVE_RelaxedIK")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/GROOVE")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/GROOVE/GROOVE_Utils")
 
 from start_here import urdf_file_name, joint_names, joint_ordering, ee_fixed_joints, starting_config, \
     joint_state_define, collision_file_name, fixed_frame
@@ -18,7 +27,6 @@ from sensor_msgs.msg import JointState
 from visualization_msgs.msg import Marker
 import rospy
 import roslaunch
-import os
 import tf
 
 

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 '''
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
@@ -40,6 +40,7 @@ if __name__ == '__main__':
     launch.start()
 
     rate = rospy.Rate(5.0)
+    previous_joint_state_position = [None, None, None, None, None, None, None]
     while not rospy.is_shutdown():
         tf_pub.sendTransform((0,0,0),
                              tf.transformations.quaternion_from_euler(0, 0, 0),
@@ -48,6 +49,10 @@ if __name__ == '__main__':
                              fixed_frame)
 
         if not joint_state == None:
-            print 'current joint state: ' + str(list(joint_state.position))
+            if not list(joint_state.position) == previous_joint_state_position:
+                print('current joint state: ' + str(list(joint_state.position)))
+                previous_joint_state_position = list(joint_state.position)
+
+        rospy.sleep(0.05)
 
     rate.sleep()

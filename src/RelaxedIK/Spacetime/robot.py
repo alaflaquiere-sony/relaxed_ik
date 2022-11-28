@@ -65,7 +65,7 @@ class Robot:
     def split_state_into_subchains(self, x):
         subchains = []
 
-        for i in xrange(self.numChains):
+        for i in range(self.numChains):
             subchain = []
 
             for s in self.subchain_indices[i]:

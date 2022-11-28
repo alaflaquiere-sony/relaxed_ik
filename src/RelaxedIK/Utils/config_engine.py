@@ -1,7 +1,8 @@
 import numpy as np
 from colors import bcolors
 from os import listdir
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
+import joblib
 from os.path import isfile, join
 from neural_net_trainer import Collision_NN_Trainer
 import os
@@ -55,7 +56,7 @@ class Config_Engine:
                     if response == 'y':
                         return None
                     else:
-                        print bcolors.FAIL + 'Exiting.  Please manually specify which config file you would like to use on the next run.' + bcolors.ENDC
+                        print(bcolors.FAIL + 'Exiting.  Please manually specify which config file you would like to use on the next run.' + bcolors.ENDC)
                         exit(1)
 
         response = raw_input(bcolors.OKBLUE + 'Config file not found, generating a new one!  This will take some time.  Continue?  (y or n): ' + bcolors.ENDC)
@@ -80,4 +81,4 @@ class Config_Engine:
 
 if __name__ == '__main__':
     ce = Config_Engine()
-    print ce.check_for_config_file()
+    print(ce.check_for_config_file())

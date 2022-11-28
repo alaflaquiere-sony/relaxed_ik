@@ -11,7 +11,7 @@ class Collision_Object_Container:
     def __init__(self, yaml_path):
         self.collision_objects = []
         f = open(yaml_path)
-        y = yaml.load(f)
+        y = yaml.load(f, yaml.SafeLoader)
 
         keys = y.keys()
         for k in keys:
@@ -50,7 +50,9 @@ class Collision_Object_Container:
         for i,c in enumerate(self.collision_objects):
             c.marker.id = i
 
-    def get_min_distance(self, (a, b)):
+    def get_min_distance(self, ab):
+        a = ab[0]
+        b = ab[1]
         obja = self.collision_objects[a].obj
         objb = self.collision_objects[b].obj
 
@@ -347,7 +349,7 @@ class Collision_Mesh(Collision_Object):
         self.make_rviz_marker()
 
     def make_rviz_marker(self):
-        print bc.WARNING + 'WARNING: Mesh collision object not supported in rviz visualization' + bc.ENDC
+        print(bc.WARNING + 'WARNING: Mesh collision object not supported in rviz visualization' + bc.ENDC)
         self.marker.scale.x = 0.0001
         self.marker.scale.y = 0.0001
         self.marker.scale.z = 0.0001
