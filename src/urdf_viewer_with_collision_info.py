@@ -15,7 +15,6 @@ import rospy
 import roslaunch
 import tf
 import os
-import yaml
 from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
 from sensor_msgs.msg import JointState
@@ -38,7 +37,7 @@ if __name__ == "__main__":
     rik = get_relaxedIK_from_info_file(path_to_src, preconfig=True)
 
     y = get_relaxedIK_yaml_obj(path_to_src)
-    if not y == None:
+    if y is not None:
         urdf_file_name = y["urdf_file_name"]
         fixed_frame = y["fixed_frame"]
         joint_ordering = y["joint_ordering"]
@@ -66,7 +65,7 @@ if __name__ == "__main__":
             (0, 0, 0), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), "common_world", fixed_frame
         )
 
-        if not joint_state == None:
+        if joint_state is not None:
             js = joint_state.position
             if not prev_state == js:
                 names = joint_state.name

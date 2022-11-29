@@ -15,7 +15,7 @@ class Collision_Object_Container:
 
         keys = y.keys()
         for k in keys:
-            if not y[k] == None:
+            if y[k] is not None:
                 if k == "robot_link_radius" or k == "sample_states" or k == "training_states" or k == "problem_states":
                     continue
                 for i in range(len(y[k])):
@@ -62,6 +62,7 @@ class Collision_Object_Container:
         ret = fcl.distance(obja, objb, self.request, self.result)
         return self.result.min_distance
 
+    ######################################################  Alban 2022-11-29
     def add_collision_objects_from_robot(self, robot, exclusion=[]):
         numDOF = robot.numDOF
 
@@ -71,18 +72,18 @@ class Collision_Object_Container:
             jtPts = frames[0]
 
             numLinks = len(jtPts) - 1
-            for l in range(numLinks):
-                curr_idx = numLinks * arm_idx + l
-                if not curr_idx in exclusion:
-                    ptA = jtPts[l]
-                    ptB = jtPts[l + 1]
+            for link_i in range(numLinks):
+                curr_idx = numLinks * arm_idx + link_i
+                if curr_idx not in exclusion:
+                    ptA = jtPts[link_i]
+                    ptB = jtPts[link_i + 1]
                     midPt = ptA + 0.5 * (ptB - ptA)
                     dis = np.linalg.norm(ptA - ptB)
                     if dis < 0.02:
                         continue
 
                     cylinder = Collision_Cylinder.init_with_arguments(
-                        "robotLink_" + str(arm_idx) + "_" + str(l),
+                        "robotLink_" + str(arm_idx) + "_" + str(link_i),
                         curr_idx,
                         [0, 0, 0],
                         midPt,
@@ -91,7 +92,29 @@ class Collision_Object_Container:
                     cylinder.type = "robot_link"
                     self.collision_objects.append(cylinder)
 
+                    sphere1 = Collision_Sphere.init_with_arguments(
+                        "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_up",
+                        curr_idx,
+                        [0, 0, 0],
+                        ptA,
+                        self.robot_link_radius,
+                    )
+                    sphere1.type = "robot_link"
+                    self.collision_objects.append(sphere1)
+
+                    sphere2 = Collision_Sphere.init_with_arguments(
+                        "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_down",
+                        curr_idx,
+                        [0, 0, 0],
+                        ptB,
+                        self.robot_link_radius,
+                    )
+                    sphere2.type = "robot_link"
+                    self.collision_objects.append(sphere2)
+
         self.set_rviz_ids()
+
+    ######################################################
 
     def update_all_transforms(self, all_frames):
 
@@ -113,7 +136,15 @@ class Collision_Object_Container:
                 ptA = all_frames[arm_id][0][link_id]
                 ptB = all_frames[arm_id][0][link_id + 1]
                 midPt = ptA + 0.5 * (ptB - ptA)
-                final_pos = midPt
+                if len(name_arr) > 3:  # this is a sphere used to create a capsule
+                    if name_arr[3] == "up":
+                        final_pos = ptA
+                    elif name_arr[3] == "down":
+                        final_pos = ptB
+                    else:
+                        print("Error in marker name")
+                else:
+                    final_pos = midPt
 
                 rot_mat = np.zeros((3, 3))
                 z = ptB - ptA
