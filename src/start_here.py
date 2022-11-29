@@ -393,7 +393,7 @@ collision_file_name = "collision_panda_with_tweezer.yaml"
 ######################################################################################################
 # Step 9a: Now that the solver has gone through its preprocessing, you can now use the relaxedIK
 #   solver as a standalone ROS node.  To start the solver, first load a desired info file using the
-#   command found in Step 7.
+#   command found in Step 6.
 #
 #   For the rust version of the solver (recommended), run the following command:
 #       roslaunch relaxed_ik relaxed_ik_rust.launch

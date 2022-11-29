@@ -430,7 +430,7 @@ class PreprocessorEngine:
     def load_yaml(self, suffix=""):
         top_dir = self.path_to_src + "/RelaxedIK/Config/collision_nn_rust"
         f1 = open(top_dir + "/" + self.y["collision_nn_file"] + suffix + ".yaml", "r")
-        y = yaml.load(f1)
+        y = yaml.load(f1, yaml.SafeLoader)
         self.coefs = y["coefs"]
         self.intercepts = y["intercepts"]
 
