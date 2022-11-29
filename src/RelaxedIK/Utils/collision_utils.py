@@ -11,7 +11,7 @@ class Collision_Object_Container:
     def __init__(self, yaml_path):
         self.collision_objects = []
         f = open(yaml_path)
-        y = yaml.load(f)
+        y = yaml.load(f, yaml.SafeLoader)
 
         keys = y.keys()
         for k in keys:

@@ -10,7 +10,7 @@ def get_relaxedIK_yaml_obj(path_to_src):
         info_file_name = rospy.get_param("relaxedIK/loaded_info_file_name")
         info_file_path = path_to_src + "/RelaxedIK/Config/info_files/" + info_file_name
         info_file = open(info_file_path, "r")
-        y = yaml.load(info_file)
+        y = yaml.load(info_file, yaml.SafeLoader)
         return y
     else:
         return None
@@ -21,7 +21,7 @@ def get_relaxedIK_yaml_obj(path_to_src):
 def get_relaxedIK_yaml_obj_from_info_file_name(path_to_src, info_file_name):
     info_file_path = path_to_src + "/RelaxedIK/Config/info_files/" + info_file_name
     info_file = open(info_file_path, "r")
-    y = yaml.load(info_file)
+    y = yaml.load(info_file, yaml.SafeLoader)
     return y
 
 

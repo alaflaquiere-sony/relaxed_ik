@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 """
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
@@ -32,7 +32,7 @@ from RelaxedIK.Utils.file_utils import *
 import yaml
 import pickle
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.externals import joblib
+import joblib
 
 
 def relu(x):
@@ -185,8 +185,7 @@ class PreprocessorEngine:
                 file_idx = np.random.randint(0, highest_number)
                 try_idx += 1
             chosen_idxs.append(file_idx)
-
-            pk = pickle.load(open(dir + "/{}.pkl".format(file_idx)))
+            pk = pickle.load(open(dir + "/{}.pkl".format(file_idx), "rb"))
             for i in range(len(pk[0])):
                 self.states.append(pk[0][i])
                 self.jt_pts.append(pk[1][i])
@@ -402,13 +401,13 @@ class PreprocessorEngine:
 
     def dump_clf(self, suffix=""):
         top_dir = self.path_to_src + "/RelaxedIK/Config/collision_nn_rust"
-        f1 = open(top_dir + "/" + self.y["collision_nn_file"] + suffix, "w")
+        f1 = open(top_dir + "/" + self.y["collision_nn_file"] + suffix, "wb")
         joblib.dump(self.clf, f1)
 
     def load_clf(self, suffix=""):
         top_dir = self.path_to_src + "/RelaxedIK/Config/collision_nn_rust"
         try:
-            f1 = open(top_dir + "/" + self.y["collision_nn_file"] + suffix, "r")
+            f1 = open(top_dir + "/" + self.y["collision_nn_file"] + suffix, "rb")
             self.clf = joblib.load(f1)
             return True
         except:

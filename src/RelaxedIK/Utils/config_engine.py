@@ -61,7 +61,7 @@ class Config_Engine:
             if f == self.nn_file_name:
                 return f
 
-        response = raw_input(
+        response = input(
             bcolors.OKBLUE
             + "Config file not found, generating a new one!  This will take some time.  Continue?  (y or n): "
             + bcolors.ENDC

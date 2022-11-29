@@ -1,6 +1,6 @@
-import objective as obj
-import constraint as con
-from colors import bcolors
+import RelaxedIK.GROOVE.GROOVE_Utils.objective as obj
+import RelaxedIK.GROOVE.GROOVE_Utils.constraint as con
+from RelaxedIK.Utils.colors import bcolors
 
 
 class GrooveType:
