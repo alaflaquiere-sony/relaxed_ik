@@ -1,14 +1,33 @@
-#! /usr/bin/env python
-'''
+#! /usr/bin/env python3
+"""
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
 last update: 5/10/18
-'''
+"""
 ######################################################################################################
 
-from start_here import urdf_file_name, joint_names, joint_ordering, ee_fixed_joints, starting_config, \
-    joint_state_define, collision_file_name, fixed_frame, config_file_name
+import os
+import sys
+
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/Spacetime")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/Utils")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/urdfs")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/GROOVE_RelaxedIK")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/GROOVE")
+sys.path.append("/root/catkin_ws/src/relaxed_ik/src/RelaxedIK/GROOVE/GROOVE_Utils")
+
+from start_here import (
+    urdf_file_name,
+    joint_names,
+    joint_ordering,
+    ee_fixed_joints,
+    starting_config,
+    joint_state_define,
+    collision_file_name,
+    fixed_frame,
+    config_file_name,
+)
 from RelaxedIK.relaxedIK import RelaxedIK
 from relaxed_ik.msg import EEPoseGoals
 from geometry_msgs.msg import Pose
@@ -20,19 +39,19 @@ import tf
 import math
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Don't change this code####################################################################################
-    rospy.init_node('sample_node')
+    rospy.init_node("sample_node")
 
     ####################################################################################################################
     relaxedIK = RelaxedIK.init_from_config(config_file_name)
     ####################################################################################################################
 
-    urdf_file = open(relaxedIK.vars.urdf_path, 'r')
+    urdf_file = open(relaxedIK.vars.urdf_path, "r")
     urdf_string = urdf_file.read()
-    rospy.set_param('robot_description', urdf_string)
-    js_pub = rospy.Publisher('joint_states',JointState,queue_size=5)
-    ee_pose_goals_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals', EEPoseGoals, queue_size=3)
+    rospy.set_param("robot_description", urdf_string)
+    js_pub = rospy.Publisher("joint_states", JointState, queue_size=5)
+    ee_pose_goals_pub = rospy.Publisher("/relaxed_ik/ee_pose_goals", EEPoseGoals, queue_size=3)
     tf_pub = tf.TransformBroadcaster()
 
     rospy.sleep(0.3)
@@ -40,7 +59,7 @@ if __name__ == '__main__':
     # Don't change this code ###########################################################################################
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
-    launch_path = os.path.dirname(__file__) + '/../launch/robot_state_pub.launch'
+    launch_path = os.path.dirname(__file__) + "/../launch/robot_state_pub.launch"
     launch = roslaunch.parent.ROSLaunchParent(uuid, [launch_path])
     launch.start()
     ####################################################################################################################
@@ -56,13 +75,13 @@ if __name__ == '__main__':
         num_ee = relaxedIK.vars.robot.numChains
         goal_pos = []
         goal_quat = []
-        goal_pos.append([0,s*c,0])
+        goal_pos.append([0, s * c, 0])
         for i in range(num_ee):
-            goal_quat.append([1,0,0,0])
+            goal_quat.append([1, 0, 0, 0])
             if i == 0:
                 continue
             else:
-                goal_pos.append([0,0,0])
+                goal_pos.append([0, 0, 0])
 
         xopt = relaxedIK.solve(goal_pos, goal_quat)
 
@@ -95,11 +114,9 @@ if __name__ == '__main__':
 
         ee_pose_goals_pub.publish(ee_pose_goals)
 
-        tf_pub.sendTransform((0, 0, 0),
-                             tf.transformations.quaternion_from_euler(0, 0, 0),
-                             rospy.Time.now(),
-                             'common_world',
-                             fixed_frame)
+        tf_pub.sendTransform(
+            (0, 0, 0), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), "common_world", fixed_frame
+        )
 
         idx += 1
         counter += stride

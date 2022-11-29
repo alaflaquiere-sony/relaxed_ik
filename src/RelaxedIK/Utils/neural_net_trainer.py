@@ -1,12 +1,14 @@
 import numpy as np
 from collision_graph import Collision_Graph
 from sklearn.neural_network import MLPClassifier, MLPRegressor
+
 # from sklearn.externals import joblib
 import joblib
 import pickle
 
 import time
 import numpy.random as r
+
 
 def frames_to_jt_pt_vec(all_frames):
     out_vec = []
@@ -19,6 +21,7 @@ def frames_to_jt_pt_vec(all_frames):
 
     return out_vec
 
+
 def rand_vec(bounds):
     vec = []
     for b in bounds:
@@ -29,6 +32,7 @@ def rand_vec(bounds):
 
     return np.array(vec)
 
+
 class Collision_NN_Trainer:
     def __init__(self, collision_graph, num_samples=300000):
         self.num_samples = num_samples
@@ -38,29 +42,31 @@ class Collision_NN_Trainer:
         self.robot = self.cg.robot
         self.bounds = self.cg.robot.bounds
 
-        for i in xrange(num_samples):
+        for i in range(num_samples):
             rvec = rand_vec(self.bounds)
             frames = self.robot.getFrames(rvec)
             score = self.cg.get_collision_score(frames)
             input = frames_to_jt_pt_vec(frames)
             self.inputs.append(input)
             self.outputs.append(score)
-            print(str(i) + ' of ' + str(num_samples) + ' samples' + ': ' + str(score))
+            print(str(i) + " of " + str(num_samples) + " samples" + ": " + str(score))
 
-
-
-        self.clf = MLPRegressor(solver='adam', alpha=1,
-                           hidden_layer_sizes=(70, 70, 70, 70, 70, 70), max_iter=300000, verbose=True,
-                           learning_rate='adaptive')
+        self.clf = MLPRegressor(
+            solver="adam",
+            alpha=1,
+            hidden_layer_sizes=(70, 70, 70, 70, 70, 70),
+            max_iter=300000,
+            verbose=True,
+            learning_rate="adaptive",
+        )
 
         self.clf.fit(self.inputs, self.outputs)
-
 
         self.output_comparisons()
 
     def output_comparisons(self, num_samples=100):
-        print('output comparisons...')
-        for i in xrange(num_samples):
+        print("output comparisons...")
+        for i in range(num_samples):
             rand = rand_vec(self.robot.bounds)
             frames = self.robot.getFrames(rand)
             jt_pt_vec = frames_to_jt_pt_vec(frames)

@@ -14,37 +14,56 @@ from ..Utils.joint_utils import *
 
 
 def objective_master_relaxedIK(x):
+
+    # >>>>> DEBUG
+    print("DANS RELAXEDIK_OBJECTIVE")
+    print(get_groove_global_vars())
+    # <<<<< DEBUG
+
     vars = get_groove_global_vars()
     vars.frames = vars.robot.getFrames(x)
 
     return objective_master(x)
 
+
 ########################################################################################################################
 
+
 class Position_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Position'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Position"
 
     def __call__(self, x, vars):
         # positions = vars.arm.getFrames(x)[0]
         positions = vars.frames[0]
         eePos = positions[-1]
         goal_pos = vars.goal_pos
-        diff = (eePos - goal_pos)
+        diff = eePos - goal_pos
         norm_ord = 2
         x_val = np.linalg.norm(diff, ord=norm_ord)
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10
         g = 2
-        return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+        return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
+
 
 class Position_MultiEE_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Position_MultiEE'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Position_MultiEE"
 
     def __call__(self, x, vars):
         if vars.c_boost:
@@ -56,7 +75,7 @@ class Position_MultiEE_Obj(Objective):
                 positions = f[0]
                 eePos = positions[-1]
                 goal_pos = vars.goal_positions[i]
-                diff = (eePos - goal_pos)
+                diff = eePos - goal_pos
                 norm_ord = 2
                 x_val = np.linalg.norm(diff, ord=norm_ord)
                 x_val_sum += x_val
@@ -65,19 +84,25 @@ class Position_MultiEE_Obj(Objective):
 
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10
         g = 2
 
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
+
 
 class Orientation_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Orientation'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Orientation"
 
     def __call__(self, x, vars):
         frames = vars.frames[1]
@@ -91,12 +116,12 @@ class Orientation_Obj(Objective):
         ee_quat = Tf.quaternion_from_matrix(new_mat)
 
         q = ee_quat
-        ee_quat2 = [-q[0],-q[1],-q[2],-q[3]]
+        ee_quat2 = [-q[0], -q[1], -q[2], -q[3]]
 
         norm_ord = 2
         # start = time.time()
-        disp = np.linalg.norm(Tf.quaternion_disp(goal_quat,ee_quat), ord=norm_ord)
-        disp2 = np.linalg.norm(Tf.quaternion_disp(goal_quat,ee_quat2),ord=norm_ord)
+        disp = np.linalg.norm(Tf.quaternion_disp(goal_quat, ee_quat), ord=norm_ord)
+        disp2 = np.linalg.norm(Tf.quaternion_disp(goal_quat, ee_quat2), ord=norm_ord)
         # after = time.time()
         # print after - start
 
@@ -104,19 +129,24 @@ class Orientation_Obj(Objective):
         # x_val = np.min(np.array([disp,disp2]))
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Orientation_MultiEE_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Orientation_MultiEE'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Orientation_MultiEE"
 
     def __call__(self, x, vars):
         if vars.c_boost:
@@ -148,20 +178,24 @@ class Orientation_MultiEE_Obj(Objective):
 
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
-
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Min_Jt_Vel_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return True
-    def name(self): return 'Min_Jt_Vel'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return True
+
+    def name(self):
+        return "Min_Jt_Vel"
 
     def __call__(self, x, vars):
         if vars.c_boost:
@@ -172,40 +206,49 @@ class Min_Jt_Vel_Obj(Objective):
 
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10.0
         g = 2
 
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
-
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Min_EE_Vel_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return True
-    def name(self): return 'Min_EE_Vel'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return True
+
+    def name(self):
+        return "Min_EE_Vel"
 
     def __call__(self, x, vars):
         jtPt = vars.frames[0][-1]
         x_val = np.linalg.norm(vars.ee_pos - jtPt)
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10.0
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Min_Jt_Accel_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return True
-    def name(self): return 'Min_Jt_Accel'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return True
+
+    def name(self):
+        return "Min_Jt_Accel"
 
     def __call__(self, x, vars):
         if vars.c_boost:
@@ -223,18 +266,24 @@ class Min_Jt_Accel_Obj(Objective):
 
         t = 0.0
         d = 2.0
-        c = .1
+        c = 0.1
         f = 10.0
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
+
 
 class Min_EE_Accel_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return True
-    def name(self): return 'Min_EE_Accel'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return True
+
+    def name(self):
+        return "Min_EE_Accel"
 
     def __call__(self, x, vars):
         jtPt = vars.frames[0][-1]
@@ -249,18 +298,24 @@ class Min_EE_Accel_Obj(Objective):
         x_val = np.linalg.norm(a)
         t = 0.0
         d = 2.0
-        c = .2
+        c = 0.2
         f = 0.0
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
+
 
 class Min_Jt_Jerk_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return True
-    def name(self): return 'Min_Jt_Jerk'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return True
+
+    def name(self):
+        return "Min_Jt_Jerk"
 
     def __call__(self, x, vars):
         if vars.c_boost:
@@ -283,19 +338,25 @@ class Min_Jt_Jerk_Obj(Objective):
 
         t = 0.0
         d = 2.0
-        c = .2
+        c = 0.2
         f = 0.0
         g = 2
 
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
+
 
 class Min_EE_Jerk_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return True
-    def name(self): return 'Min_EE_Jerk'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return True
+
+    def name(self):
+        return "Min_EE_Jerk"
 
     def __call__(self, x, vars):
         jtPt = vars.frames[0][-1]
@@ -315,16 +376,21 @@ class Min_EE_Jerk_Obj(Objective):
         x_val = np.linalg.norm(j)
         t = 0.0
         d = 2.0
-        c = .2
+        c = 0.2
         f = 1.0
         g = 2
-        return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2))) + f * (x_val - t) ** g
+        return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Joint_Limit_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Joint_Limit'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Joint_Limit"
 
     def __call__(self, x, vars):
         sum = 0.0
@@ -335,8 +401,8 @@ class Joint_Limit_Obj(Objective):
             l = joint_limits[i][0]
             u = joint_limits[i][1]
             mid = (u + l) / 2.0
-            a = penalty / (u - mid)**d
-            sum += a*(x[i] - mid)**d
+            a = penalty / (u - mid) ** d
+            sum += a * (x[i] - mid) ** d
 
         vars.joint_limit_obj_value = sum
 
@@ -344,18 +410,23 @@ class Joint_Limit_Obj(Objective):
         t = 0
         d = 2
         c = 2.3
-        f = .003
+        f = 0.003
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Self_Collision_Avoidance_Obj(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Self_Collision_Avoidance'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Self_Collision_Avoidance"
 
     def __call__(self, x, vars):
         frames = vars.frames
@@ -364,19 +435,24 @@ class Self_Collision_Avoidance_Obj(Objective):
         x_val = vars.collision_graph.get_collision_score(frames)
         t = 0.0
         d = 2.0
-        c = .08
+        c = 0.08
         f = 1.0
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
 
 class Collision_Avoidance_nn(Objective):
-    def __init__(self, *args): pass
-    def isVelObj(self): return False
-    def name(self): return 'Collision_Avoidance_nn'
+    def __init__(self, *args):
+        pass
+
+    def isVelObj(self):
+        return False
+
+    def name(self):
+        return "Collision_Avoidance_nn"
 
     def __call__(self, x, vars):
         frames = vars.frames
@@ -397,11 +473,11 @@ class Collision_Avoidance_nn(Objective):
         t = 0
         d = 2
         c = 1.85
-        f = .004
+        f = 0.004
         g = 2
         if vars.c_boost:
             return objectives_ext.nloss(x_val, t, d, c, f, g)
         else:
-            return (-math.e ** ((-(x_val - t) ** d) / (2.0 * c ** 2)) ) + f * (x_val - t) ** g
+            return (-math.e ** ((-((x_val - t) ** d)) / (2.0 * c**2))) + f * (x_val - t) ** g
 
         # return math.exp(x_val - 0.64) - 1

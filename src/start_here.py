@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-'''
+"""
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
@@ -17,7 +17,7 @@ To get started, just follow the instructions found here.
 If anything with the solver is not working as expected, or if you have any feedback, feel free to let us know! (rakita@cs.wisc.edu)
 We are actively supporting and extending this code, so we are interested to hear about how the solver is being used and any positive
 or negative experiences in using it.
-'''
+"""
 ######################################################################################################
 
 
@@ -51,14 +51,14 @@ or negative experiences in using it.
 # Step 1b: Please set the following variable to the file name of your robot urdf.  For example, for the
 #   ur5 robot urdf already in the urdfs folder, this variable would read 'ur5.urdf'
 #   ex: urdf_file_name = 'ur5.urdf'
-urdf_file_name = 'panda_with_tweezer.urdf'
+urdf_file_name = "panda_with_tweezer.urdf"
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 1c: Please provide the fixed frame name.  This will be the root link name in the urdf
 #   ex: fixed_frame  = 'base_link'
-fixed_frame = 'panda_link0'
+fixed_frame = "panda_link0"
 ######################################################################################################
 
 
@@ -69,7 +69,6 @@ fixed_frame = 'panda_link0'
 #   you should see rviz start up, and your robot platform should be visible.  You can rotate the joints
 #       in rviz by using the GUI pop-up
 ######################################################################################################
-
 
 
 ######################################################################################################
@@ -85,7 +84,22 @@ fixed_frame = 'panda_link0'
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
-joint_names = [["panda_joint_world", "panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4", "panda_joint5", "panda_joint6", "panda_joint7", "panda_joint8", "robotiq_85_coupling_joint", "robotiq_85_base_joint", "tool_joint"]]
+joint_names = [
+    [
+        "panda_joint_world",
+        "panda_joint1",
+        "panda_joint2",
+        "panda_joint3",
+        "panda_joint4",
+        "panda_joint5",
+        "panda_joint6",
+        "panda_joint7",
+        "panda_joint8",
+        "robotiq_85_coupling_joint",
+        "robotiq_85_base_joint",
+        "tool_joint",
+    ]
+]
 ######################################################################################################
 
 
@@ -105,7 +119,15 @@ joint_names = [["panda_joint_world", "panda_joint1", "panda_joint2", "panda_join
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering = ["panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4", "panda_joint5", "panda_joint6", "panda_joint7"]
+joint_ordering = [
+    "panda_joint1",
+    "panda_joint2",
+    "panda_joint3",
+    "panda_joint4",
+    "panda_joint5",
+    "panda_joint6",
+    "panda_joint7",
+]
 ######################################################################################################
 
 
@@ -130,7 +152,7 @@ ee_fixed_joints = ["tool_joint"]
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+starting_config = [0.0, 0.0, 0.0, -1.5611936, 0.0, 1.545542, 0.0]
 ######################################################################################################
 
 
@@ -195,11 +217,14 @@ starting_config = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 # TODO: fill out this function, or leave it how it is for the default option
 from sensor_msgs.msg import JointState
+
+
 def joint_state_define(x):
     js = JointState()
     js.name = joint_ordering
     js.position = tuple(x)
     return js
+
 
 ######################################################################################################
 
@@ -226,7 +251,7 @@ def joint_state_define(x):
 #   a configuration where two links are natively and safely close together.  THIS STEP IS VERY IMPORTANT FOR THE NEURAL
 #   NETWORK TO LEARN A GOOD COLLISION FUNCTION.  A set of 5 - 10 configurations where the robot is not in collision has been
 #   seen to work well, but more will always be better.  Good candidates for "sample states" are robot configurations that are
-#   somewhat close to collisions states, but do not exhibit a collision.  If it seems like the robot is being too cautious after 
+#   somewhat close to collisions states, but do not exhibit a collision.  If it seems like the robot is being too cautious after
 #   training the neural network (i.e., it is staying too far away from collision states), include more sample states that are closer to
 #   collision states without colliding.
 #
@@ -263,9 +288,8 @@ def joint_state_define(x):
 #
 #   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = 'collision_my_panda.yaml'
+collision_file_name = "collision_my_panda.yaml"
 ###########################################################################################################
-
 
 
 ######################################################################################################
@@ -301,7 +325,7 @@ collision_file_name = 'collision_my_panda.yaml'
 #   RelaxedIK/Config directory.
 #   Please provide the name of the file that you renamed your config file to
 #   ex: config_file_name = 'ur5.config'
-config_file_name = ''
+config_file_name = "my_panda.config"
 ######################################################################################################
 
 
@@ -357,8 +381,8 @@ config_file_name = ''
 #       std_msgs/Header header
 #       std_msgs/Float32[] angles
 #
-#   The header is a standard header that corresponds to the exact header from the input EEPoseGoals message 
-#   (the header sequence number can be used to get a correspondence between input pose goals and output joint solutions 
+#   The header is a standard header that corresponds to the exact header from the input EEPoseGoals message
+#   (the header sequence number can be used to get a correspondence between input pose goals and output joint solutions
 #   in a stream of solutions)
 #   The angles field contains the joint angle solutions as Float32 values, adhering to the naming order
 #   provided in step 3b when the configuration file was created.
@@ -366,13 +390,3 @@ config_file_name = ''
 
 
 # Step-by-step guide ends here!
-
-
-
-
-
-
-
-
-
-
