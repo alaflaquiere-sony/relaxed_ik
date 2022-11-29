@@ -2,24 +2,20 @@ import objective as obj
 import constraint as con
 from colors import bcolors
 
+
 class GrooveType:
     def __init__(self, vars):
         self.vars = vars
         self.constraint_dict = self.__construct_constraint_dict(self.vars.constraints)
 
-        obj_closure = lambda x : self.vars.objective_function(x, vars)
+        obj_closure = lambda x: self.vars.objective_function(x, vars)
 
-        self.objective_function = obj_closure #### change this to a closure around the vars object
-
+        self.objective_function = obj_closure  #### change this to a closure around the vars object
 
     def __construct_constraint_dict(self, constraints):
         constraint_dicts = []
         for c in constraints:
-            d = {
-                'type': c.constraintType(),
-                'fun': c.func,
-                'args': (self.vars,)
-            }
+            d = {"type": c.constraintType(), "fun": c.func, "args": (self.vars,)}
             constraint_dicts.append(d)
 
         return tuple(constraint_dicts)
@@ -37,26 +33,35 @@ class GrooveType_scipy(GrooveType):
             initSol = prev_state
 
         if self.vars.unconstrained:
-        # if True:
-            xopt_full = obj.O.minimize(self.objective_function, initSol,
-                                   bounds=self.vars.bounds, args=(), method=self.solver_name,
-                                   options={'maxiter': max_iter, 'disp': verbose_output})
+            # if True:
+            xopt_full = obj.O.minimize(
+                self.objective_function,
+                initSol,
+                bounds=self.vars.bounds,
+                args=(),
+                method=self.solver_name,
+                options={"maxiter": max_iter, "disp": verbose_output},
+            )
         else:
-            xopt_full = obj.O.minimize(self.objective_function, initSol, constraints=self.constraint_dict,
-                                   bounds=self.vars.bounds, args=(), method=self.solver_name,
-                                   options={'maxiter': max_iter, 'disp': verbose_output})
-
+            xopt_full = obj.O.minimize(
+                self.objective_function,
+                initSol,
+                constraints=self.constraint_dict,
+                bounds=self.vars.bounds,
+                args=(),
+                method=self.solver_name,
+                options={"maxiter": max_iter, "disp": verbose_output},
+            )
 
         xopt = xopt_full.x
         f_obj = xopt_full.fun
 
         if verbose_output:
-            print bcolors.OKBLUE + str(xopt_full) + bcolors.ENDC + '\n'
+            print(bcolors.OKBLUE + str(xopt_full) + bcolors.ENDC + "\n")
 
         self.vars.update(xopt, f_obj)
 
         return xopt
-
 
 
 class GrooveType_nlopt(GrooveType):
@@ -64,31 +69,31 @@ class GrooveType_nlopt(GrooveType):
         try:
             import nlopt as N
         except:
-            raise Exception('Error: In order to use an NLopt solver, you must have NLopt installed.')
+            raise Exception("Error: In order to use an NLopt solver, you must have NLopt installed.")
 
         GrooveType.__init__(self, vars)
         self.solver_name = solver_name
 
-        if solver_name == 'slsqp':
+        if solver_name == "slsqp":
             self.opt = N.opt(N.LD_SLSQP, len(self.vars.init_state))
-        elif solver_name == 'ccsaq':
+        elif solver_name == "ccsaq":
             self.opt = N.opt(N.LD_CCSAQ, len(self.vars.init_state))
-        elif solver_name == 'mma':
+        elif solver_name == "mma":
             self.opt = N.opt(N.LD_MMA, len(self.vars.init_state))
-        elif solver_name == 'bobyqa':
+        elif solver_name == "bobyqa":
             self.opt = N.opt(N.LN_BOBYQA, len(self.vars.init_state))
-        elif solver_name == 'cobyla':
+        elif solver_name == "cobyla":
             self.opt = N.opt(N.LN_COBYLA, len(self.vars.init_state))
-        elif solver_name == 'lbfgs':
+        elif solver_name == "lbfgs":
             self.opt = N.opt(N.LD_LBFGS, len(self.vars.init_state))
-        elif solver_name == 'mlsl':
+        elif solver_name == "mlsl":
             self.opt = N.opt(N.GD_MLSL, len(self.vars.init_state))
-        elif solver_name == 'direct':
+        elif solver_name == "direct":
             self.opt = N.opt(N.GN_DIRECT_L_RAND, len(self.vars.init_state))
-        elif solver_name == 'newuoa':
+        elif solver_name == "newuoa":
             self.opt = N.opt(N.LN_NEWUOA_BOUND, len(self.vars.init_state))
         else:
-            raise Exception('Invalid solver_name in subroutine [GrooveType_nlopt]!')
+            raise Exception("Invalid solver_name in subroutine [GrooveType_nlopt]!")
 
         self.opt.set_min_objective(obj.objective_master_nlopt)
         self.opt.set_xtol_rel(1e-4)
@@ -106,9 +111,8 @@ class GrooveType_nlopt(GrooveType):
             self.opt.set_lower_bounds(l)
             self.opt.set_upper_bounds(u)
 
-
-    def solve(self, prev_state='', verbose_output=False, maxtime=None):
-        if prev_state == '':
+    def solve(self, prev_state="", verbose_output=False, maxtime=None):
+        if prev_state == "":
             initSol = self.vars.xopt
         else:
             initSol = prev_state
@@ -118,9 +122,9 @@ class GrooveType_nlopt(GrooveType):
 
         if not self.vars.unconstrained:
             for c in self.vars.constraints:
-                if c.constraintType() == 'ineq':
+                if c.constraintType() == "ineq":
                     self.opt.add_inequality_constraint(c.func_nlopt, 0.1)
-                elif c.constraintType() == 'eq':
+                elif c.constraintType() == "eq":
                     self.opt.add_equality_constraint(c.func_nlopt, 0.1)
         else:
             self.opt.remove_inequality_constraints()
@@ -130,7 +134,7 @@ class GrooveType_nlopt(GrooveType):
         f_obj = self.opt.last_optimum_value()
 
         if verbose_output:
-            print bcolors.OKBLUE + str(xopt) + bcolors.ENDC + '\n'
+            print(bcolors.OKBLUE + str(xopt) + bcolors.ENDC + "\n")
 
         self.vars.update(xopt, f_obj)
 

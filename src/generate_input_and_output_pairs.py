@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-'''
+"""
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
@@ -7,7 +7,7 @@ last update: 10/30/19
 
 PLEASE DO NOT CHANGE CODE IN THIS FILE.  IF TRYING TO SET UP RELAXEDIK, PLEASE REFER TO start_here.py INSTEAD
 AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
-'''
+"""
 
 ######################################################################################################
 
@@ -31,6 +31,7 @@ def frames_to_jt_pt_vec(all_frames):
 
     return out_vec
 
+
 def rand_vec(relaxedIK):
     bounds = relaxedIK.vars.bounds
     vec = []
@@ -42,6 +43,7 @@ def rand_vec(relaxedIK):
 
     return np.array(vec)
 
+
 def get_input_output_pair(relaxedIK):
     rv = rand_vec(relaxedIK)
     frames = relaxedIK.vars.robot.getFrames(rv)
@@ -51,30 +53,34 @@ def get_input_output_pair(relaxedIK):
     yoshiwaka_score = relaxedIK.vars.robot.getYoshikawaMeasure(rv)
     return rv, jt_pt_vec, collision_score, condition_score, yoshiwaka_score
 
+
 def get_collision_score(relaxedIK, state):
     frames = relaxedIK.vars.robot.getFrames(state)
     return relaxedIK.vars.collision_graph.get_collision_score(frames)
 
+
 def list_of_values_to_string(list):
-    out_str = '[ '
-    for i in xrange(len(list) - 1):
+    out_str = "[ "
+    for i in range(len(list) - 1):
         out_str += str(list[i])
-        out_str += ', '
+        out_str += ", "
     out_str += str(list[-1])
-    out_str += ' ]'
+    out_str += " ]"
     return out_str
 
+
 def list_of_list_of_values_to_string(list):
-    out_str = '[ '
+    out_str = "[ "
     if type(list[0]) == float or type(list[0]) == np.float64:
         return list_of_values_to_string(list)
     else:
-        for i in xrange(len(list) - 1):
-            out_str += list_of_list_of_values_to_string(list[i]) + ', '
+        for i in range(len(list) - 1):
+            out_str += list_of_list_of_values_to_string(list[i]) + ", "
         out_str += list_of_list_of_values_to_string(list[-1])
 
-    out_str += ' ]'
+    out_str += " ]"
     return out_str
+
 
 def get_highest_file_number(files):
     if len(files) == 0:
@@ -82,17 +88,18 @@ def get_highest_file_number(files):
 
     highest = 0
     for f in files:
-        s = f.split('.')
+        s = f.split(".")
         n = int(s[0])
         if n > highest:
             highest = n
 
     return highest
 
+
 total_number_of_examples = 200000
 lines_per_file = 1000
-if __name__ == '__main__':
-    rospy.init_node('inupt_and_output_pairs_node')
+if __name__ == "__main__":
+    rospy.init_node("inupt_and_output_pairs_node")
     rospy.sleep(0.3)
 
     path_to_src = os.path.dirname(__file__)
@@ -101,9 +108,9 @@ if __name__ == '__main__':
     y = get_relaxedIK_yaml_obj(path_to_src)
     num_chains = relaxedIK.vars.robot.numChains
 
-    robot_name = y['urdf_file_name'].split('.')[0]
+    robot_name = y["urdf_file_name"].split(".")[0]
 
-    top_dir = path_to_src + '/RelaxedIK/Config/collision_inputs_and_outputs'
+    top_dir = path_to_src + "/RelaxedIK/Config/collision_inputs_and_outputs"
     dirs = os.walk(top_dir).next()
 
     dir_found = False
@@ -112,9 +119,9 @@ if __name__ == '__main__':
             dir_found = True
 
     if not dir_found:
-        os.mkdir(top_dir + '/' + robot_name)
+        os.mkdir(top_dir + "/" + robot_name)
 
-    top_dir = path_to_src + '/RelaxedIK/Config/collision_inputs_and_outputs/' + robot_name
+    top_dir = path_to_src + "/RelaxedIK/Config/collision_inputs_and_outputs/" + robot_name
 
     files = []
     # r=root, d=directories, f = files
@@ -128,14 +135,14 @@ if __name__ == '__main__':
     total_example_count = 0
 
     while total_example_count < total_number_of_examples:
-        out_file = open(top_dir + '/{}.pkl'.format(file_idx), 'w')
+        out_file = open(top_dir + "/{}.pkl".format(file_idx), "w")
         states = []
         jt_pts = []
         collision_scores = []
         condition_scores = []
         yoshiwaka_scores = []
-        for j in xrange(lines_per_file):
-            print 'file {}, line {}'.format(file_idx, j)
+        for j in range(lines_per_file):
+            print("file {}, line {}".format(file_idx, j))
             tup = get_input_output_pair(relaxedIK)
             states.append(tup[0])
             jt_pts.append(tup[1])
@@ -150,6 +157,3 @@ if __name__ == '__main__':
         # out_file.write('jt_pts: {}\n'.format(list_of_list_of_values_to_string(jt_pts)))
         # out_file.write('collision_scores: {}'.format(str(collision_scores)))
         file_idx += 1
-
-
-

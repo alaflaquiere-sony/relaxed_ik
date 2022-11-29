@@ -1,15 +1,23 @@
 #! /usr/bin/env python
 
-'''
+"""
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
 last update: 5/10/18
-'''
+"""
 ######################################################################################################
 
-from start_here import urdf_file_name, joint_names, joint_ordering, ee_fixed_joints, starting_config, \
-    joint_state_define, collision_file_name, fixed_frame
+from start_here import (
+    urdf_file_name,
+    joint_names,
+    joint_ordering,
+    ee_fixed_joints,
+    starting_config,
+    joint_state_define,
+    collision_file_name,
+    fixed_frame,
+)
 from RelaxedIK.GROOVE_RelaxedIK.relaxedIK_vars import RelaxedIK_vars
 from relaxed_ik.msg import EEPoseGoals
 from geometry_msgs.msg import Pose
@@ -25,10 +33,10 @@ from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 from RelaxedIK.Julia_Bridge.relaxedIK_julia import RelaxedIK_Julia
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Don't change this code####################################################################################
 
-    rospy.init_node('sample_node')
+    rospy.init_node("sample_node")
 
     path_to_src = os.path.dirname(__file__)
 
@@ -38,26 +46,28 @@ if __name__ == '__main__':
 
     y = get_relaxedIK_yaml_obj(path_to_src)
     if not y == None:
-        urdf_file_name = y['urdf_file_name']
-        joint_names = y['joint_names']
-        joint_ordering = y['joint_ordering']
-        ee_fixed_joints = y['ee_fixed_joints']
-        starting_config = y['starting_config']
-        collision_file_name = y['collision_file_name']
-        fixed_frame = y['fixed_frame']
-        joint_state_define_file_name = y['joint_state_define_func_file']
-        joint_state_define_file = open(path_to_src + '/RelaxedIK/Config/joint_state_define_functions/' + joint_state_define_file_name, 'r')
+        urdf_file_name = y["urdf_file_name"]
+        joint_names = y["joint_names"]
+        joint_ordering = y["joint_ordering"]
+        ee_fixed_joints = y["ee_fixed_joints"]
+        starting_config = y["starting_config"]
+        collision_file_name = y["collision_file_name"]
+        fixed_frame = y["fixed_frame"]
+        joint_state_define_file_name = y["joint_state_define_func_file"]
+        joint_state_define_file = open(
+            path_to_src + "/RelaxedIK/Config/joint_state_define_functions/" + joint_state_define_file_name, "r"
+        )
         func = joint_state_define_file.read()
         exec(func)
-        print urdf_file_name
+        print(urdf_file_name)
 
     num_chains = len(ee_fixed_joints)
 
-    urdf_file = open(path_to_src + '/RelaxedIK/urdfs/' + urdf_file_name, 'r')
+    urdf_file = open(path_to_src + "/RelaxedIK/urdfs/" + urdf_file_name, "r")
     urdf_string = urdf_file.read()
-    rospy.set_param('robot_description', urdf_string)
-    js_pub = rospy.Publisher('joint_states',JointState,queue_size=5)
-    ee_pose_goals_pub = rospy.Publisher('/relaxed_ik/ee_pose_goals', EEPoseGoals, queue_size=3)
+    rospy.set_param("robot_description", urdf_string)
+    js_pub = rospy.Publisher("joint_states", JointState, queue_size=5)
+    ee_pose_goals_pub = rospy.Publisher("/relaxed_ik/ee_pose_goals", EEPoseGoals, queue_size=3)
     tf_pub = tf.TransformBroadcaster()
 
     rospy.sleep(0.5)
@@ -65,7 +75,7 @@ if __name__ == '__main__':
     # Don't change this code ###########################################################################################
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
-    launch_path = os.path.dirname(__file__) + '/../launch/robot_state_pub.launch'
+    launch_path = os.path.dirname(__file__) + "/../launch/robot_state_pub.launch"
     launch = roslaunch.parent.ROSLaunchParent(uuid, [launch_path])
     launch.start()
     ####################################################################################################################
@@ -83,20 +93,20 @@ if __name__ == '__main__':
         num_ee = num_chains
         goal_pos = []
         goal_quat = []
-        goal_pos.append([s*c,0,0])
+        goal_pos.append([s * c, 0, 0])
         for i in range(num_ee):
-            goal_quat.append([1,0,0,0])
+            goal_quat.append([1, 0, 0, 0])
             if i == 0:
                 continue
             else:
-                goal_pos.append([0,0,0])
+                goal_pos.append([0, 0, 0])
 
         # xopt = relaxedIK.solve(goal_pos, goal_quat)
         # xopt = get_solution(path_to_src)
         # print xopt
         # xopt = 6*[0.0]
         xopt = rik.solve(goal_pos, goal_quat)
-        print xopt
+        print(xopt)
 
         js = joint_state_define(xopt)
         if js == None:
@@ -127,11 +137,9 @@ if __name__ == '__main__':
 
         ee_pose_goals_pub.publish(ee_pose_goals)
 
-        tf_pub.sendTransform((0, 0, 0),
-                             tf.transformations.quaternion_from_euler(0, 0, 0),
-                             rospy.Time.now(),
-                             'common_world',
-                             fixed_frame)
+        tf_pub.sendTransform(
+            (0, 0, 0), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), "common_world", fixed_frame
+        )
 
         idx += 1
         counter += stride

@@ -91,8 +91,7 @@ def draw_text_in_rviz(publisher, frame_id, text, position, scale_value, color, i
     publisher.publish(marker)
 
 
-
-def draw_linestrip_in_rviz(publisher, frame_id, points, color, width = 0.03, id=3):
+def draw_linestrip_in_rviz(publisher, frame_id, points, color, width=0.03, id=3):
     # marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 3)
     # publisher must publish a visualization_msg/Marker to "visualization_marker" topic
     marker = Marker()
@@ -109,7 +108,7 @@ def draw_linestrip_in_rviz(publisher, frame_id, points, color, width = 0.03, id=
 
     marker.scale.x = width
 
-    for i in xrange(len(points)):
+    for i in range(len(points)):
         p = Point()
         p.x = points[i][0]
         p.y = points[i][1]
@@ -119,7 +118,7 @@ def draw_linestrip_in_rviz(publisher, frame_id, points, color, width = 0.03, id=
     publisher.publish(marker)
 
 
-def draw_linelist_in_rviz(publisher, frame_id, points, color, width = 0.03, id=3):
+def draw_linelist_in_rviz(publisher, frame_id, points, color, width=0.03, id=3):
     # marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 3)
     # publisher must publish a visualization_msg/Marker to "visualization_marker" topic
     marker = Marker()
@@ -136,7 +135,7 @@ def draw_linelist_in_rviz(publisher, frame_id, points, color, width = 0.03, id=3
 
     marker.scale.x = width
 
-    for i in xrange(len(points)):
+    for i in range(len(points)):
         p = Point()
         p.x = points[i][0]
         p.y = points[i][1]

@@ -1,6 +1,6 @@
 import math
 import numpy
-from _transformations import *
+from RelaxedIK.Utils._transformations import *
 
 # added by Danny Rakita
 def quaternion_log(quaternion):
@@ -16,10 +16,11 @@ def quaternion_log(quaternion):
         a = 1
         try:
             a = math.acos(quaternion[0])
-        except: pass
+        except:
+            pass
         sina = math.sin(a)
         if abs(sina >= 0.005):
-            c = a/sina
+            c = a / sina
             v[0] *= c
             v[1] *= c
             v[2] *= c
@@ -38,7 +39,7 @@ def quaternion_exp(vec3):
     a = numpy.linalg.norm(q)
     sina = math.sin(a)
     if abs(sina) >= 0.005:
-        c = sina/a
+        c = sina / a
         q[1] *= c
         q[2] *= c
         q[3] *= c
@@ -46,6 +47,7 @@ def quaternion_exp(vec3):
     q[0] = math.cos(a)
 
     return q
+
 
 # added by Danny Rakita
 def quaternion_disp(q, qPrime):
@@ -59,13 +61,13 @@ def quaternion_disp(q, qPrime):
     m = quaternion_multiply(inv, qPrime)
     return quaternion_log(m)
 
-def quaternion_dispQ(q,qPrime):
+
+def quaternion_dispQ(q, qPrime):
     inv = quaternion_inverse(q)
     return quaternion_multiply(inv, qPrime)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     q1 = random_quaternion()
     q2 = random_quaternion()
-    print quaternion_disp(q1,q2)
-
+    print(quaternion_disp(q1, q2))

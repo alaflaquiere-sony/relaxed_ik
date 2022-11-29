@@ -1,6 +1,7 @@
-import arm
+import RelaxedIK.Spacetime.arm
 import numpy as np
-from ..Utils.transformations import quaternion_from_matrix
+from RelaxedIK.Utils.transformations import quaternion_from_matrix
+
 
 class Robot:
     def __init__(self, arms, full_joint_lists, joint_order):
@@ -33,7 +34,7 @@ class Robot:
                     self.subchain_indices[i].append(idx)
 
     def __get_index_from_joint_order(self, jt_name):
-        for j,joint in enumerate(self.joint_order):
+        for j, joint in enumerate(self.joint_order):
             if jt_name == self.joint_order[j]:
                 return j
 
@@ -42,22 +43,22 @@ class Robot:
         #                'The joint {} was not found in joint_order.  Is there perhaps a misspelling?'.format(jt_name) )
 
     def __initialize_bounds(self):
-        bounds = self.numDOF*[0.0]
+        bounds = self.numDOF * [0.0]
 
-        for i,a in enumerate(self.arms):
+        for i, a in enumerate(self.arms):
             sub_bounds = a.joint_limits
-            for j,l in enumerate(sub_bounds):
+            for j, l in enumerate(sub_bounds):
                 idx = self.subchain_indices[i][j]
                 bounds[idx] = l
 
         self.bounds = bounds
 
     def __initialize_velocity_limits(self):
-        velocity_limits = self.numDOF*[0.0]
+        velocity_limits = self.numDOF * [0.0]
 
-        for i,a in enumerate(self.arms):
+        for i, a in enumerate(self.arms):
             sub_vl = a.velocity_limits
-            for j,l in enumerate(sub_vl):
+            for j, l in enumerate(sub_vl):
                 idx = self.subchain_indices[i][j]
                 velocity_limits[idx] = l
 
@@ -66,7 +67,7 @@ class Robot:
     def split_state_into_subchains(self, x):
         subchains = []
 
-        for i in xrange(self.numChains):
+        for i in range(self.numChains):
             subchain = []
 
             for s in self.subchain_indices[i]:
@@ -102,7 +103,7 @@ class Robot:
 
         chains = self.split_state_into_subchains(x)
 
-        for i,c in enumerate(chains):
+        for i, c in enumerate(chains):
             frames = self.arms[i].getFrames(c)
             all_frames.append(frames)
 
@@ -111,14 +112,13 @@ class Robot:
     def getMatrixConditioningMeasure(self, x):
         condition_measures = []
         subchains = self.split_state_into_subchains(x)
-        for i in xrange(self.numChains):
+        for i in range(self.numChains):
             condition_measures.append(self.arms[i].getMatrixConditioningMeasure(subchains[i]))
-        return np.min( np.array(condition_measures) )
+        return np.min(np.array(condition_measures))
 
     def getYoshikawaMeasure(self, x):
         yoshikawa_measures = []
         subchains = self.split_state_into_subchains(x)
-        for i in xrange(self.numChains):
+        for i in range(self.numChains):
             yoshikawa_measures.append(self.arms[i].getYoshikawaMeasure(subchains[i]))
-        return np.min( np.array(yoshikawa_measures) )
-
+        return np.min(np.array(yoshikawa_measures))

@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-'''
+"""
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
@@ -7,7 +7,7 @@ last update: 7/1/18
 
 PLEASE DO NOT CHANGE CODE IN THIS FILE.  IF TRYING TO SET UP RELAXEDIK, PLEASE REFER TO start_here.py INSTEAD
 AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
-'''
+"""
 
 
 ######################################################################################################
@@ -21,14 +21,17 @@ from RelaxedIK.Utils.colors import bcolors
 from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
 
 eepg = None
+
+
 def eePoseGoals_cb(data):
     global eepg
     eepg = data
 
-if __name__ == '__main__':
-    rospy.init_node('relaxed_ik_node')
-    angles_pub = rospy.Publisher('/relaxed_ik/joint_angle_solutions',JointAngles,queue_size=3)
-    rospy.Subscriber('/relaxed_ik/ee_pose_goals', EEPoseGoals, eePoseGoals_cb)
+
+if __name__ == "__main__":
+    rospy.init_node("relaxed_ik_node")
+    angles_pub = rospy.Publisher("/relaxed_ik/joint_angle_solutions", JointAngles, queue_size=3)
+    rospy.Subscriber("/relaxed_ik/ee_pose_goals", EEPoseGoals, eePoseGoals_cb)
     rospy.sleep(0.3)
 
     path_to_src = os.path.dirname(__file__)
@@ -36,7 +39,8 @@ if __name__ == '__main__':
     relaxedIK = get_relaxedIK_from_info_file(path_to_src)
     num_chains = relaxedIK.vars.robot.numChains
 
-    while eepg == None: continue
+    while eepg == None:
+        continue
 
     rate = rospy.Rate(150)
     while not rospy.is_shutdown():
@@ -45,7 +49,7 @@ if __name__ == '__main__':
         pose_goals = eepg.ee_poses
         header = eepg.header
 
-        for i in xrange(num_chains):
+        for i in range(num_chains):
             p = pose_goals[i]
             pos_x = p.position.x
             pos_y = p.position.y
@@ -66,6 +70,6 @@ if __name__ == '__main__':
             ja.angles.data.append(x)
 
         angles_pub.publish(ja)
-        print xopt
+        print(xopt)
 
         rate.sleep()

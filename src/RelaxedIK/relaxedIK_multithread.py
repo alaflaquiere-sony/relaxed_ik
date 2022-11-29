@@ -13,24 +13,26 @@ import multiprocessing as mp
 import rospy
 
 
-
 class RelaxedIK_multithread(object):
-    def __init__(self, subchain_indices, relaxedIK_full, optimization_package='scipy', solver_name='slsqp'):
+    def __init__(self, subchain_indices, relaxedIK_full, optimization_package="scipy", solver_name="slsqp"):
         self.subchain_indices = subchain_indices
         self.relaxedIK_full = relaxedIK_full
         self.optimization_package = optimization_package
         self.solver_name = solver_name
-        self.filter = EMA_filter(self.relaxedIK_full.vars.init_state,a=0.5)
+        self.filter = EMA_filter(self.relaxedIK_full.vars.init_state, a=0.5)
 
         self.num_subchains = len(subchain_indices)
         self.relaxedIK_subchains = []
         self.mt_manager = Multithread_Manager(subchain_indices, relaxedIK_full)
 
-        for i in xrange(self.num_subchains):
-            mt_vars = RelaxedIK_mt_vars(relaxedIK_full, self.mt_manager, i)  ######################### if there were going to be different variants of solver per subchain, this is where it would be added!!!!!!  (e.g., spearate objectives for camera)
-            relaxedIK_subchain = RelaxedIK_subchain(mt_vars, optimization_package=optimization_package, solver_name=solver_name)
+        for i in range(self.num_subchains):
+            mt_vars = RelaxedIK_mt_vars(
+                relaxedIK_full, self.mt_manager, i
+            )  ######################### if there were going to be different variants of solver per subchain, this is where it would be added!!!!!!  (e.g., spearate objectives for camera)
+            relaxedIK_subchain = RelaxedIK_subchain(
+                mt_vars, optimization_package=optimization_package, solver_name=solver_name
+            )
             self.relaxedIK_subchains.append(relaxedIK_subchain)
-
 
         self.threads = []
         for r in self.relaxedIK_subchains:
@@ -45,7 +47,6 @@ class RelaxedIK_multithread(object):
         # r= self.relaxedIK_subchains[1]
         # mp.Process(target=r.run).start()
 
-
     def solve(self, goal_positions, goal_quats):
         r = self.relaxedIK_subchains[0]
 
@@ -53,11 +54,11 @@ class RelaxedIK_multithread(object):
         quat_goals = []
 
         # for r in self.relaxedIK_subchains:
-        if r.vars.rotation_mode == 'relative':
+        if r.vars.rotation_mode == "relative":
             # r.vars.goal_quats = []
             for i, q in enumerate(goal_quats):
                 quat_goals.append(T.quaternion_multiply(q, r.vars.init_ee_quats[i]))
-        elif r.vars.rotation_mode == 'absolute':
+        elif r.vars.rotation_mode == "absolute":
             # r.vars.goal_quats = []
             for i, q in enumerate(goal_quats):
                 quat_goals.append(q)
@@ -69,11 +70,11 @@ class RelaxedIK_multithread(object):
             if disp > M.pi / 2.0:
                 quat_goals[i] = [-q[0], -q[1], -q[2], -q[3]]
 
-        if r.vars.position_mode == 'relative':
+        if r.vars.position_mode == "relative":
             # r.vars.goal_positions = []
             for i, p in enumerate(goal_positions):
                 pos_goals.append(np.array(p) + r.vars.init_ee_positions[i])
-        elif r.vars.position_mode == 'absolute':
+        elif r.vars.position_mode == "absolute":
             # r.vars.goal_positions = []
             for i, p in enumerate(goal_positions):
                 pos_goals.append(np.array(p))
@@ -89,14 +90,13 @@ class RelaxedIK_multithread(object):
         #    t.join()
 
         # threads = []
-        #for r in self.relaxedIK_subchains:
+        # for r in self.relaxedIK_subchains:
         #   t = threading.Thread(target=r.run)
         #   threads.append(t)
         #   t.start()
 
-        #for t in threads:
+        # for t in threads:
         #   t.join()
-
 
         curr_target_idx = self.mt_manager.solution_count + 1
         move_on = False
@@ -107,9 +107,10 @@ class RelaxedIK_multithread(object):
                     local_move_on = False
             move_on = local_move_on
 
-
         self.mt_manager.subchains = self.mt_manager.subchains_write
-        xopt = glue_subchains(self.mt_manager.subchain_indices, self.mt_manager.subchains, self.relaxedIK_full.vars.robot.numDOF)
+        xopt = glue_subchains(
+            self.mt_manager.subchain_indices, self.mt_manager.subchains, self.relaxedIK_full.vars.robot.numDOF
+        )
         # xopt = self.filter.filter(xopt)
         self.mt_manager.locked_x = xopt
 
@@ -120,9 +121,3 @@ class RelaxedIK_multithread(object):
             r.vars.prev_goal_positions = pos_goals
 
         return xopt
-
-
-
-
-
-

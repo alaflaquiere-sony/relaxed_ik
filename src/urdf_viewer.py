@@ -33,7 +33,7 @@ if __name__ == "__main__":
     path_to_src = os.path.dirname(__file__)
 
     y = get_relaxedIK_yaml_obj(path_to_src)
-    if not y == None:
+    if y is not None:
         urdf_file_name = y["urdf_file_name"]
         fixed_frame = y["fixed_frame"]
         joint_ordering = y["joint_ordering"]
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             (0, 0, 0), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), "common_world", fixed_frame
         )
 
-        if not joint_state == None:
+        if joint_state is not None:
             js = joint_state.position
             if not prev_state == js:
                 names = joint_state.name
@@ -72,4 +72,4 @@ if __name__ == "__main__":
                 print(str(positions) + ",")
                 prev_state = js
 
-    rate.sleep()
+        rate.sleep()
