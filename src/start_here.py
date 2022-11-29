@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-'''
+"""
 author: Danny Rakita
 website: http://pages.cs.wisc.edu/~rakita/
 email: rakita@cs.wisc.edu
@@ -19,7 +19,7 @@ To get started, just follow the instructions found here.
 If anything with the solver is not working as expected, or if you have any feedback, feel free to let us know! (rakita@cs.wisc.edu)
 We are actively supporting and extending this code, so we are interested to hear about how the solver is being used and any positive
 or negative experiences in using it.
-'''
+"""
 ######################################################################################################
 
 
@@ -48,21 +48,21 @@ or negative experiences in using it.
 # Step 1b: Please set the following variable to the file name of your robot urdf.  For example, for the
 #   ur5 robot urdf already in the urdfs folder, this variable would read 'ur5.urdf'
 #   ex: urdf_file_name = 'ur5.urdf'
-urdf_file_name = ''
+urdf_file_name = "panda_with_tweezer.urdf"
 ######################################################################################################
 
 
 ######################################################################################################
 # Step 1c: Please provide the fixed frame name.  This will be the root link name in the urdf
 #   ex: fixed_frame  = 'base_link'
-fixed_frame = ''
+fixed_frame = "world"
 ######################################################################################################
 
 ######################################################################################################
 # Step 1d: At the end of this walk-through, there will be a central yaml file automatically generated that
 #   will contain information about your robot setup.  Please provide a name for that file.
 #   ex: info_file_name = 'ur5_info.yaml'
-info_file_name = ''
+info_file_name = "panda_with_tweezer.yaml"
 ######################################################################################################
 
 
@@ -73,7 +73,6 @@ info_file_name = ''
 #   you should see rviz start up, and your robot platform should be visible.  You can rotate the joints
 #       in rviz by using the GUI pop-up
 ######################################################################################################
-
 
 
 ######################################################################################################
@@ -89,7 +88,7 @@ info_file_name = ''
 #                'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2'] ]
 #   example 2 shows what this would be for a single end-effector robot, specifically using the UR5 robot
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
-joint_names = [ [ ] ]
+joint_names = [[]]
 ######################################################################################################
 
 
@@ -109,7 +108,7 @@ joint_names = [ [ ] ]
 #   ex1: [ 'WAIST', 'RIGHT_SHOULDER_PITCH', 'RIGHT_SHOULDER_ROLL', 'RIGHT_SHOULDER_YAW', 'RIGHT_ELBOW', 'RIGHT_WRIST_YAW',
 #               'RIGHT_WRIST_PITCH', 'RIGHT_WRIST_YAW_2','LEFT_SHOULDER_PITCH', 'LEFT_SHOULDER_ROLL', 'LEFT_SHOULDER_YAW',
 #               'LEFT_ELBOW', 'LEFT_WRIST_YAW', 'LEFT_WRIST_PITCH', 'LEFT_WRIST_YAW_2' ]
-joint_ordering =  [ ]
+joint_ordering = []
 ######################################################################################################
 
 
@@ -124,7 +123,7 @@ joint_ordering =  [ ]
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = [  ]
+ee_fixed_joints = []
 ######################################################################################################
 
 
@@ -133,10 +132,8 @@ ee_fixed_joints = [  ]
 #   The configuration should be a single list of values for each joint's rotation (in radians) adhering
 #   to the joint order you specified in Step 3b
 #   ex: starting_config = [ 3.12769839, -0.03987385, -2.07729916, -1.03981438, -1.58652782, -1.5710159 ]
-starting_config = [ ]
+starting_config = []
 ######################################################################################################
-
-
 
 
 ######################################################################################################
@@ -199,8 +196,10 @@ starting_config = [ ]
 #
 # TODO: fill out this function, or leave it how it is for the default option
 from sensor_msgs.msg import JointState
+
+
 def joint_state_define(x):
-	return None
+    return None
 
 
 ######################################################################################################
@@ -254,7 +253,7 @@ def joint_state_define(x):
 #   of the learning process.
 #
 #   Both the training_states and problem_states lists are optional parameters.  If you do not want to include states in these lists, leave them as they are in the
-#	example file.
+# 	example file.
 #
 #   Again, feel free to use the urdf_viewer tool provided in the relaxed_ik package to select training_states and problem_states
 #
@@ -283,9 +282,8 @@ def joint_state_define(x):
 #
 #   Please provide the name of the collision file that you have been filling out in the RelaxedIK/Config directory:
 #   ex: collision_file_name = 'collision.yaml'
-collision_file_name = ' '
+collision_file_name = " "
 ###########################################################################################################
-
 
 
 ######################################################################################################
@@ -295,15 +293,11 @@ collision_file_name = ' '
 ######################################################################################################
 
 
-
-
 ######################################################################################################
 # Step 5c: There should now be a robot info file corresponding to the robot you are currently setting up
 #   in the RelaxedIK/Config/info_files directory.  From now on, the solver will get all information directly
 #   from this file upon initialization
 ######################################################################################################
-
-
 
 
 ######################################################################################################
@@ -312,8 +306,6 @@ collision_file_name = ' '
 #
 #      roslaunch relaxed_ik load_info_file.launch
 #######################################################################################################
-
-
 
 
 ######################################################################################################
@@ -331,8 +323,6 @@ collision_file_name = ' '
 ######################################################################################################
 
 
-
-
 ######################################################################################################
 # Step 8a: If this is your first time setting up the RelaxedIK solver for a particular robot platform,
 #   the solver will need to go through a one-time pre-processing step.  In this process, our method
@@ -348,14 +338,13 @@ collision_file_name = ' '
 #
 #   As the name implies, this script will generate hundreds of thousands of input and output pairs to be
 #   used for the learning process.  After this script finishes (usually takes between 10 - 20 minutes),
-#   run the following command to initialize the learning process: 
+#   run the following command to initialize the learning process:
 #
 #       roslaunch relaxed_ik preprocessing_rust.launch
 #
 #   The system will immediately start training the nueral network.
 #   This process will take about 5 - 20 minutes, depending on the robot and number of degrees of freedom
 ######################################################################################################
-
 
 
 ######################################################################################################
@@ -375,17 +364,16 @@ collision_file_name = ' '
 ######################################################################################################
 
 
-
 ######################################################################################################
 # Step 9a: Now that the solver has gone through its preprocessing, you can now use the relaxedIK
-#   solver as a standalone ROS node.  To start the solver, first load a desired info file using the 
+#   solver as a standalone ROS node.  To start the solver, first load a desired info file using the
 #   command found in Step 7.
 #
 #   For the rust version of the solver (recommended), run the following command:
 #       roslaunch relaxed_ik relaxed_ik_rust.launch
 #
 #   Note: The first time this command is run, it will take a few minutes to compile.  It will only take
-#   this long the first time it's ever built though, after that it'll start immediately with this command.  
+#   this long the first time it's ever built though, after that it'll start immediately with this command.
 #
 #   (optional)
 #   If you would like to start up the python or julia versions of the solver, please use one of the following
