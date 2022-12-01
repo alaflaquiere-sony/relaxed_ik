@@ -55,7 +55,7 @@ urdf_file_name = "panda_with_tweezer.urdf"
 ######################################################################################################
 # Step 1c: Please provide the fixed frame name.  This will be the root link name in the urdf
 #   ex: fixed_frame  = 'base_link'
-fixed_frame = "world"
+fixed_frame = "panda_link0"
 ######################################################################################################
 
 ######################################################################################################
@@ -90,7 +90,6 @@ info_file_name = "panda_with_tweezer.yaml"
 #   ex2: [ ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'] ]
 joint_names = [
     [
-        "panda_joint_world",
         "panda_joint1",
         "panda_joint2",
         "panda_joint3",

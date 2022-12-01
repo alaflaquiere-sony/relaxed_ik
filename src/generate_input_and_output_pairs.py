@@ -99,7 +99,7 @@ def get_highest_file_number(files):
 total_number_of_examples = 200000
 lines_per_file = 1000
 if __name__ == "__main__":
-    rospy.init_node("inupt_and_output_pairs_node")
+    rospy.init_node("input_and_output_pairs_node")
     rospy.sleep(0.3)
 
     path_to_src = os.path.dirname(__file__)

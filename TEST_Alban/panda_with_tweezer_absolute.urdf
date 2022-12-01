@@ -1,12 +1,5 @@
 <?xml version="1.0" ?>
 <robot name="panda">
-	<link name="world" />
-	<joint name="panda_joint_world" type="fixed">
-		<parent link="world"/>
-		<child link="panda_link0"/>
-		<origin rpy="0 0 0" xyz="0 0 0"/>
-		<dynamics damping="1.0"/>
-	</joint>
 	<link name="panda_link0">
 		<visual>
 			<geometry>

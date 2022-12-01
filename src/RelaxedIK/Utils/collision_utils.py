@@ -6,6 +6,83 @@ from visualization_msgs.msg import Marker
 import rospy
 import RelaxedIK.Utils.transformations as T
 
+# >>>>> DEBUG
+CAPSULE_DATA = [
+    {
+        "name": "panda_link0",
+        "frame": 0,
+        "rpy": [0, 1.5707963267948966, 0],
+        "xyz": [-0.075, 0, 0.06],
+        "length": 0.03,
+        "radius": 0.09,
+    },
+    {
+        "name": "panda_link1",
+        "frame": 1,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, -0.1915],
+        "length": 0.283,
+        "radius": 0.09,
+    },
+    {
+        "name": "panda_link2",
+        "frame": 2,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, 0],
+        "length": 0.12,
+        "radius": 0.09,
+    },
+    {
+        "name": "panda_link3",
+        "frame": 3,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, -0.145],
+        "length": 0.15,
+        "radius": 0.09,
+    },
+    {
+        "name": "panda_link4",
+        "frame": 4,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, 0],
+        "length": 0.12,
+        "radius": 0.09,
+    },
+    {
+        "name": "panda_link5",
+        "frame": 5,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, -0.26],
+        "length": 0.1,
+        "radius": 0.09,
+    },
+    {
+        "name": "panda_link5_2",
+        "frame": 5,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0.08, -0.13],
+        "length": 0.14,
+        "radius": 0.055,
+    },
+    {
+        "name": "panda_link6",
+        "frame": 6,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, -0.03],
+        "length": 0.08,
+        "radius": 0.08,
+    },
+    {
+        "name": "panda_link7",
+        "frame": 7,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, 0.01],
+        "length": 0.14,
+        "radius": 0.07,
+    },
+]
+# <<<<< DEBUG
+
 
 class Collision_Object_Container:
     def __init__(self, yaml_path):
@@ -67,50 +144,74 @@ class Collision_Object_Container:
         numDOF = robot.numDOF
 
         frames_list = robot.getFrames(numDOF * [0])
-        for arm_idx in range(len(frames_list)):
-            frames = frames_list[arm_idx]
-            jtPts = frames[0]
 
-            numLinks = len(jtPts) - 1
-            for link_i in range(numLinks):
-                curr_idx = numLinks * arm_idx + link_i
-                if curr_idx not in exclusion:
-                    ptA = jtPts[link_i]
-                    ptB = jtPts[link_i + 1]
-                    midPt = ptA + 0.5 * (ptB - ptA)
-                    dis = np.linalg.norm(ptA - ptB)
-                    if dis < 0.02:
-                        continue
+        # >>>>> DEBUG
+        # TODO: this is not useful in this function, but good as a note for now
+        transforms_wrt_panda_link = [np.eye(4)]  # adding the transform for panda_link0
+        frames = frames_list[0]  # get the first arm's frames
+        for i in range(len(frames[0]) - 1):  # remove the last one that is not a true joint
+            transform = np.vstack(
+                (np.hstack((np.array(frames[1][i]), np.array(frames[0][i]).reshape(-1, 1))), np.array([0, 0, 0, 1]))
+            )
+            transforms_wrt_panda_link.append(transform)
 
-                    cylinder = Collision_Cylinder.init_with_arguments(
-                        "robotLink_" + str(arm_idx) + "_" + str(link_i),
-                        curr_idx,
-                        [0, 0, 0],
-                        midPt,
-                        [self.robot_link_radius, dis],
-                    )
-                    cylinder.type = "robot_link"
-                    self.collision_objects.append(cylinder)
+        # create a capsule
+        for i, c_data in enumerate(CAPSULE_DATA):
+            capsule = Collision_Capsule.init_with_arguments(
+                "robotLink_" + str(0) + "_" + str(i),
+                c_data["frame"],
+                c_data["rpy"],  # rot
+                c_data["xyz"],  # tran
+                [c_data["radius"], c_data["length"]],
+            )
+            capsule.type = "robot_link"
 
-                    sphere1 = Collision_Sphere.init_with_arguments(
-                        "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_up",
-                        curr_idx,
-                        [0, 0, 0],
-                        ptA,
-                        self.robot_link_radius,
-                    )
-                    sphere1.type = "robot_link"
-                    self.collision_objects.append(sphere1)
+            self.collision_objects.append(capsule)
+        # <<<<< DEBUG
 
-                    sphere2 = Collision_Sphere.init_with_arguments(
-                        "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_down",
-                        curr_idx,
-                        [0, 0, 0],
-                        ptB,
-                        self.robot_link_radius,
-                    )
-                    sphere2.type = "robot_link"
-                    self.collision_objects.append(sphere2)
+        # for arm_idx in range(len(frames_list)):
+        #     frames = frames_list[arm_idx]
+        #     jtPts = frames[0]
+        #     numLinks = len(jtPts) - 1
+        #     for link_i in range(numLinks):
+        #         curr_idx = numLinks * arm_idx + link_i
+        #         if curr_idx not in exclusion:
+        #             ptA = jtPts[link_i]
+        #             ptB = jtPts[link_i + 1]
+        #             midPt = ptA + 0.5 * (ptB - ptA)
+        #             dis = np.linalg.norm(ptA - ptB)
+        #             if dis < 0.02:
+        #                 continue
+
+        #             cylinder = Collision_Cylinder.init_with_arguments(
+        #                 "robotLink_" + str(arm_idx) + "_" + str(link_i),
+        #                 curr_idx,
+        #                 [0, 0, 0],
+        #                 midPt,
+        #                 [self.robot_link_radius, dis],
+        #             )
+        #             cylinder.type = "robot_link"
+        #             self.collision_objects.append(cylinder)
+
+        #             sphere1 = Collision_Sphere.init_with_arguments(
+        #                 "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_up",
+        #                 curr_idx,
+        #                 [0, 0, 0],
+        #                 ptA,
+        #                 self.robot_link_radius,
+        #             )
+        #             sphere1.type = "robot_link"
+        #             self.collision_objects.append(sphere1)
+
+        #             sphere2 = Collision_Sphere.init_with_arguments(
+        #                 "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_down",
+        #                 curr_idx,
+        #                 [0, 0, 0],
+        #                 ptB,
+        #                 self.robot_link_radius,
+        #             )
+        #             sphere2.type = "robot_link"
+        #             self.collision_objects.append(sphere2)
 
         self.set_rviz_ids()
 
@@ -118,8 +219,6 @@ class Collision_Object_Container:
 
     def update_all_transforms(self, all_frames):
 
-        # positions = frames[0]
-        # rotations = frames[1]
         positions = []
         rotations = []
         for f in all_frames:
@@ -127,39 +226,66 @@ class Collision_Object_Container:
                 positions.append(f[0][i])
                 rotations.append(f[1][i])
 
+        # >>>>> DEBUG
+        # the transform of the robot base (panda_link0) is Identify
+        positions = [np.array([0, 0, 0])]
+        rotations = [np.eye(3)]
+        frames = all_frames[0]
+        for i in range(len(frames[0]) - 1):  # remove the last one that is not a true joint
+            positions.append(frames[0][i])
+            rotations.append(frames[1][i])
+        # <<<<< DEBUG
+
         for c in self.collision_objects:
             if c.type == "robot_link":
-                name = c.name
-                name_arr = name.split("_")
-                arm_id = int(name_arr[1])
-                link_id = int(name_arr[2])
-                ptA = all_frames[arm_id][0][link_id]
-                ptB = all_frames[arm_id][0][link_id + 1]
-                midPt = ptA + 0.5 * (ptB - ptA)
-                if len(name_arr) > 3:  # this is a sphere used to create a capsule
-                    if name_arr[3] == "up":
-                        final_pos = ptA
-                    elif name_arr[3] == "down":
-                        final_pos = ptB
-                    else:
-                        print("Error in marker name")
-                else:
-                    final_pos = midPt
+                # name = c.name
+                # name_arr = name.split("_")
+                # arm_id = int(name_arr[1])
+                # link_id = int(name_arr[2])
+                # ptA = all_frames[arm_id][0][link_id]
+                # ptB = all_frames[arm_id][0][link_id + 1]
+                # midPt = ptA + 0.5 * (ptB - ptA)
+                # if len(name_arr) > 3:  # this is a sphere used to create a capsule
+                #     if name_arr[3] == "up":
+                #         final_pos = ptA
+                #     elif name_arr[3] == "down":
+                #         final_pos = ptB
+                #     else:
+                #         print("Error in marker name")
+                # else:
+                #     final_pos = midPt
 
-                rot_mat = np.zeros((3, 3))
-                z = ptB - ptA
-                norm = max(np.linalg.norm(z), 0.000001)
-                z = (1.0 / norm) * z
-                up = np.array([0, 0, 1])
-                if np.dot(z, up) == 1.0:
-                    up = np.array([1, 0, 0])
-                x = np.cross(up, z)
-                y = np.cross(z, x)
-                rot_mat[:, 0] = x
-                rot_mat[:, 1] = y
-                rot_mat[:, 2] = z
+                # rot_mat = np.zeros((3, 3))
+                # z = ptB - ptA
+                # norm = max(np.linalg.norm(z), 0.000001)
+                # z = (1.0 / norm) * z
+                # up = np.array([0, 0, 1])
+                # if np.dot(z, up) == 1.0:
+                #     up = np.array([1, 0, 0])
+                # x = np.cross(up, z)
+                # y = np.cross(z, x)
+                # rot_mat[:, 0] = x
+                # rot_mat[:, 1] = y
+                # rot_mat[:, 2] = z
+
+                # final_quat = T.quaternion_from_matrix(rot_mat)
+                coordinate_frame = c.coordinate_frame
+                # first, do local transforms
+                if coordinate_frame >= len(rotations):
+                    rot_mat = rotations[-1]
+                    final_pos = positions[-1]
+                else:
+                    rot_mat = rotations[coordinate_frame]
+                    final_pos = positions[coordinate_frame]
 
                 final_quat = T.quaternion_from_matrix(rot_mat)
+
+                local_translation = np.array(c.translation)
+                rotated_local_translation = np.dot(rot_mat, local_translation)
+                final_pos = final_pos + rotated_local_translation
+
+                local_rotation = c.quaternion
+                final_quat = T.quaternion_multiply(local_rotation, final_quat)
             else:
                 coordinate_frame = c.coordinate_frame
                 # first, do local transforms
@@ -328,7 +454,7 @@ class Collision_Capsule(Collision_Object):
 
         self.r, self.lz = self.params[0], self.params[1]
         self.g = fcl.Capsule(self.r, self.lz)
-        self.t = fcl.Transform()
+        self.t = fcl.Transform()  # not the proper pose, but it will be updates later anyway
         self.obj = fcl.CollisionObject(self.g, self.t)
         self.make_rviz_marker()
 
