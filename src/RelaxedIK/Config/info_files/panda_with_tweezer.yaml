@@ -2,7 +2,7 @@ urdf_file_name: "panda_with_tweezer.urdf"
 fixed_frame: "panda_link0"
 joint_names: [ [ "panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4", "panda_joint5", "panda_joint6", "panda_joint7", "panda_joint8", "robotiq_85_coupling_joint", "robotiq_85_base_joint", "tool_joint" ] ]
 joint_ordering: [ "panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4", "panda_joint5", "panda_joint6", "panda_joint7" ]
-ee_fixed_joints: [ "robotiq_85_base_joint" ]
+ee_fixed_joints: [ "tool_joint" ]
 starting_config: [ 0.0, 0.0, 0.0, -1.5708, 0.0, 1.7363039999999998, 0.0 ]
 collision_file_name: "collision_panda_with_tweezer.yaml"
 collision_nn_file: "panda_with_tweezer_nn"
@@ -10,8 +10,8 @@ path_to_src: "/root/catkin_ws/src/relaxed_ik/src"
 axis_types: [ [ "z", "z", "z", "z", "z", "z", "z" ] ]
 velocity_limits: [ 2.175, 2.175, 2.175, 2.175, 2.61, 2.61, 2.61 ]
 joint_limits: [ [-2.8973,2.8973], [-1.7628,1.7628], [-2.8973,2.8973], [-3.0718,-0.0698], [-2.8973,2.8973], [-0.0175,3.7525], [-2.8973,2.8973] ]
-displacements: [ [ [0.0,0.0,0.0], [0.0,-0.316,0.0], [0.0825,0.0,0.0], [-0.0825,0.384,0.0], [0.0,0.0,0.0], [0.088,0.0,0.0], [0.0,0.0,0.107], [0.0,0.0,0.0], [0.0,0.0,0.00825], [0.2445,0.0,0.0484], [0.0,0.0,0.00825] ] ]
+displacements: [ [ [0.0,0.0,0.0], [0.0,-0.316,0.0], [0.0825,0.0,0.0], [-0.0825,0.384,0.0], [0.0,0.0,0.0], [0.088,0.0,0.0], [0.0,0.0,0.107], [0.0,0.0,0.0], [0.0,0.0,0.00825], [0.2445,0.0,0.0484], [0.2445,0.0,0.0484] ] ]
 disp_offsets: [ [0.0,0.0,0.333] ]
-rot_offsets: [ [ [0.0,0.0,0.0], [-1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [-1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [0.0,0.0,0.0], [0.0,0.0,1.57079632679], [0.0,-1.5708,0.0], [1.57079632679,0.0,1.57079632679], [0.0,-1.5708,0.0] ] ]
+rot_offsets: [ [ [0.0,0.0,0.0], [-1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [-1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [1.5707963267948966,0.0,0.0], [0.0,0.0,0.0], [0.0,0.0,1.57079632679], [0.0,-1.5708,0.0], [1.57079632679,0.0,1.57079632679], [1.57079632679,0.0,1.57079632679] ] ]
 joint_types: [ [ "revolute", "revolute", "revolute", "revolute", "revolute", "revolute", "revolute", "fixed", "fixed", "fixed", "fixed" ] ]
 joint_state_define_func_file: "panda_with_tweezer_joint_state_define"

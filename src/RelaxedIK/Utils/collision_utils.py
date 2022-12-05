@@ -5,9 +5,10 @@ from RelaxedIK.Utils.colors import bcolors as bc
 from visualization_msgs.msg import Marker
 import rospy
 import RelaxedIK.Utils.transformations as T
+import trimesh
 
 # >>>>> DEBUG
-CAPSULE_DATA = [
+CAPSULE_DATA_PANDA = [
     {
         "name": "panda_link0",
         "frame": 0,
@@ -81,6 +82,38 @@ CAPSULE_DATA = [
         "radius": 0.07,
     },
 ]
+mesh_data = trimesh.exchange.stl.load_stl(
+    open(
+        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl",
+        "rb",
+    )
+)
+# mesh = trimesh.Trimesh(**mesh_data)
+MESHES_DATA_PANDA = [
+    {
+        "name": "robotiq_85_base_link",
+        "frame": 8,
+        "rpy": [0, 0, 0],
+        "xyz": [0, 0, 0],
+        "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl",
+        "verts": mesh_data["vertices"],  # duplicates are removed in `mesh`, so I have to use the original data`
+        "tris": mesh_data["faces"],
+    },
+    # {
+    #     "name": "finger_left",
+    #     "frame": 8,
+    #     "rpy": [0, 0, 0],
+    #     "xyz": [1, 0, 0],
+    #     "mesh_file": "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
+    # },
+    # {
+    #     "name": "finger_right",
+    #     "frame": 8,
+    #     "rpy": [0, 0, 0],
+    #     "xyz": [-1, 0, 0],
+    #     "mesh_file": "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_right.stl",
+    # },
+]
 # <<<<< DEBUG
 
 
@@ -125,8 +158,15 @@ class Collision_Object_Container:
         self.set_rviz_ids()
 
     def set_rviz_ids(self):
-        for i, c in enumerate(self.collision_objects):
-            c.marker.id = i
+        i = 0
+        for c in self.collision_objects:
+            if type(c.marker) is list:
+                for cc in c.marker:
+                    cc.id = i
+                    i += 1
+            else:
+                c.marker.id = i
+                i += 1
 
     def get_min_distance(self, ab):
         a, b = ab
@@ -156,7 +196,8 @@ class Collision_Object_Container:
             transforms_wrt_panda_link.append(transform)
 
         # create a capsule
-        for i, c_data in enumerate(CAPSULE_DATA):
+        i = 0
+        for c_data in CAPSULE_DATA_PANDA:
             capsule = Collision_Capsule.init_with_arguments(
                 "robotLink_" + str(0) + "_" + str(i),
                 c_data["frame"],
@@ -165,8 +206,19 @@ class Collision_Object_Container:
                 [c_data["radius"], c_data["length"]],
             )
             capsule.type = "robot_link"
-
             self.collision_objects.append(capsule)
+            i += 1
+        for m_data in MESHES_DATA_PANDA:
+            mesh = Collision_Mesh.init_with_arguments(
+                "robotLink_" + str(0) + "_" + str(i) + "_MESH",
+                m_data["frame"],
+                m_data["rpy"],  # rot
+                m_data["xyz"],  # tran
+                {"file": m_data["file"], "verts": m_data["verts"], "tris": m_data["tris"]},
+            )
+            mesh.type = "robot_link"
+            self.collision_objects.append(mesh)
+            i += 1
         # <<<<< DEBUG
 
         # for arm_idx in range(len(frames_list)):
@@ -333,7 +385,7 @@ class Collision_Object:
         self.params = collision_dict["parameters"]
         self.id = 0
         self.type = ""
-        self.pub = rospy.Publisher("visualization_marker", Marker, queue_size=5)
+        self.pub = rospy.Publisher("visualization_marker", Marker, queue_size=10)
         self.make_rviz_marker_super()
 
     @classmethod
@@ -352,37 +404,146 @@ class Collision_Object:
             translation = translation[0]
         self.t = fcl.Transform(rotation, translation)
         self.obj.setTransform(self.t)
-        self.marker.pose.position.x = translation[0]
-        self.marker.pose.position.y = translation[1]
-        self.marker.pose.position.z = translation[2]
-        self.marker.pose.orientation.w = rotation[0]
-        self.marker.pose.orientation.x = rotation[1]
-        self.marker.pose.orientation.y = rotation[2]
-        self.marker.pose.orientation.z = rotation[3]
+        if type(self) == Collision_Capsule:
+            # cylinder
+            self.marker[0].pose.position.x = translation[0]
+            self.marker[0].pose.position.y = translation[1]
+            self.marker[0].pose.position.z = translation[2]
+            self.marker[0].pose.orientation.w = rotation[0]
+            self.marker[0].pose.orientation.x = rotation[1]
+            self.marker[0].pose.orientation.y = rotation[2]
+            self.marker[0].pose.orientation.z = rotation[3]
+            # up sphere
+            # TODO set proper position
+            rotation_matrix = T.quaternion_matrix(rotation)[:3, :3]
+            up_translaton = np.dot(rotation_matrix, np.array([0, 0, self.lz / 2]).reshape(-1, 1))
+            self.marker[1].pose.position.x = translation[0] + up_translaton[0]
+            self.marker[1].pose.position.y = translation[1] + up_translaton[1]
+            self.marker[1].pose.position.z = translation[2] + up_translaton[2]
+            self.marker[1].pose.orientation.w = rotation[0]
+            self.marker[1].pose.orientation.x = rotation[1]
+            self.marker[1].pose.orientation.y = rotation[2]
+            self.marker[1].pose.orientation.z = rotation[3]
+            # down sphere
+            # TODO set proper position
+            down_translaton = np.dot(rotation_matrix, np.array([0, 0, -self.lz / 2]).reshape(-1, 1))
+            self.marker[2].pose.position.x = translation[0] + down_translaton[0]
+            self.marker[2].pose.position.y = translation[1] + down_translaton[1]
+            self.marker[2].pose.position.z = translation[2] + down_translaton[2]
+            self.marker[2].pose.orientation.w = rotation[0]
+            self.marker[2].pose.orientation.x = rotation[1]
+            self.marker[2].pose.orientation.y = rotation[2]
+            self.marker[2].pose.orientation.z = rotation[3]
+        elif type(self) == Collision_Mesh:
+            self.marker.pose.position.x = 0.0
+            self.marker.pose.position.y = 0.0
+            self.marker.pose.position.z = 0.0
+            self.marker.pose.orientation.w = 1.0
+            self.marker.pose.orientation.x = 0.0
+            self.marker.pose.orientation.y = 0.0
+            self.marker.pose.orientation.z = 0.0
+        else:
+            self.marker.pose.position.x = translation[0]
+            self.marker.pose.position.y = translation[1]
+            self.marker.pose.position.z = translation[2]
+            self.marker.pose.orientation.w = rotation[0]
+            self.marker.pose.orientation.x = rotation[1]
+            self.marker.pose.orientation.y = rotation[2]
+            self.marker.pose.orientation.z = rotation[3]
 
     def update_rviz_color(self, r, g, b, a):
-        self.marker.color.r = r
-        self.marker.color.g = g
-        self.marker.color.b = b
-        self.marker.color.a = a
+        if type(self) == Collision_Capsule:
+            for c in self.marker:
+                c.color.r = r
+                c.color.g = g
+                c.color.b = b
+                c.color.a = a
+        else:
+            self.marker.color.r = r
+            self.marker.color.g = g
+            self.marker.color.b = b
+            self.marker.color.a = a
 
     def make_rviz_marker_super(self):
-        self.marker = Marker()
-        self.marker.header.frame_id = "common_world"
-        self.marker.header.stamp = rospy.Time()
-        self.marker.id = self.id
-        self.marker.color.a = 0.4
-        self.marker.color.g = 1.0
-        self.marker.color.b = 0.7
-        self.marker.text = self.name
+        if type(self) == Collision_Capsule:
+            self.marker = []
+            # cylinder
+            marker1 = Marker()
+            marker1.header.frame_id = "common_world"
+            marker1.header.stamp = rospy.Time()
+            marker1.id = self.id
+            marker1.color.a = 0.4
+            marker1.color.g = 1.0
+            marker1.color.b = 0.7
+            marker1.text = self.name
+            self.marker.append(marker1)
+            # up sphere
+            marker2 = Marker()
+            marker2.header.frame_id = "common_world"
+            marker2.header.stamp = rospy.Time()
+            marker2.id = self.id
+            marker2.color.a = 0.4
+            marker2.color.g = 1.0
+            marker2.color.b = 0.7
+            marker2.text = self.name
+            self.marker.append(marker2)
+            # down sphere
+            marker3 = Marker()
+            marker3.header.frame_id = "common_world"
+            marker3.header.stamp = rospy.Time()
+            marker3.id = self.id
+            marker3.color.a = 0.4
+            marker3.color.g = 1.0
+            marker3.color.b = 0.7
+            marker3.text = self.name
+            self.marker.append(marker3)
+        else:
+            self.marker = Marker()
+            self.marker.header.frame_id = "common_world"
+            self.marker.header.stamp = rospy.Time()
+            self.marker.id = self.id
+            self.marker.color.a = 0.4
+            self.marker.color.g = 1.0
+            self.marker.color.b = 0.7
+            self.marker.text = self.name
 
     def make_rviz_marker(self):
         pass
 
     def draw_rviz(self):
-        self.marker.header.stamp.secs = rospy.get_rostime().secs
-        self.marker.header.stamp.nsecs = rospy.get_rostime().nsecs
-        self.pub.publish(self.marker)
+        if type(self) == Collision_Capsule:
+            for c in self.marker:
+                c.header.stamp.secs = rospy.get_rostime().secs
+                c.header.stamp.nsecs = rospy.get_rostime().nsecs
+                self.pub.publish(c)
+        elif type(self) == Collision_Mesh:
+            self.marker.header.frame_id = "common_world"
+            self.marker.header.stamp = rospy.Time()
+            self.marker.id = 27
+            self.marker.color.a = 0.4
+            self.marker.color.g = 1.0
+            self.marker.color.b = 0.7
+            self.marker.text = "test_shape"
+            self.marker.type = self.marker.MESH_RESOURCE
+            self.marker.mesh_resource = "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl"
+            self.marker.mesh_use_embedded_materials = False
+            self.marker.scale.x = 3
+            self.marker.scale.y = 3
+            self.marker.scale.z = 3
+            self.marker.pose.position.x = 0.0
+            self.marker.pose.position.y = 0.0
+            self.marker.pose.position.z = 0.0
+            self.marker.pose.orientation.w = 1.0
+            self.marker.pose.orientation.x = 0.0
+            self.marker.pose.orientation.y = 0.0
+            self.marker.pose.orientation.z = 0.0
+            self.marker.header.stamp.secs = rospy.get_rostime().secs
+            self.marker.header.stamp.nsecs = rospy.get_rostime().nsecs
+            self.pub.publish(self.marker)
+        else:
+            self.marker.header.stamp.secs = rospy.get_rostime().secs
+            self.marker.header.stamp.nsecs = rospy.get_rostime().nsecs
+            self.pub.publish(self.marker)
 
 
 class Collision_Box(Collision_Object):
@@ -459,10 +620,21 @@ class Collision_Capsule(Collision_Object):
         self.make_rviz_marker()
 
     def make_rviz_marker(self):
-        self.marker.type = self.marker.CYLINDER
-        self.marker.scale.x = self.r * 2
-        self.marker.scale.y = self.r * 2
-        self.marker.scale.z = self.lz
+        # cylinder
+        self.marker[0].type = self.marker[0].CYLINDER
+        self.marker[0].scale.x = self.r * 2
+        self.marker[0].scale.y = self.r * 2
+        self.marker[0].scale.z = self.lz
+        # up sphere
+        self.marker[1].type = self.marker[1].SPHERE
+        self.marker[1].scale.x = self.r * 2
+        self.marker[1].scale.y = self.r * 2
+        self.marker[1].scale.z = self.r * 2
+        # cylinder
+        self.marker[2].type = self.marker[2].SPHERE
+        self.marker[2].scale.x = self.r * 2
+        self.marker[2].scale.y = self.r * 2
+        self.marker[2].scale.z = self.r * 2
 
 
 class Collision_Cone(Collision_Object):
@@ -506,18 +678,19 @@ class Collision_Cylinder(Collision_Object):
 class Collision_Mesh(Collision_Object):
     def __init__(self, collision_dict):
         Collision_Object.__init__(self, collision_dict)
-        if not len(self.params) == 2:
+        if not len(self.params) == 3:
             raise TypeError(
                 bc.FAIL
-                + "ERROR: parameters for collision mesh must be a dictionary consisting of a list of verts and tris."
+                + "ERROR: parameters for collision mesh must be a dictionary consisting of a file_path, a list of verts and a list of tris."
                 + bc.ENDC
             )
 
-        if not len(self.params["verts"]) == len(self.params["tris"]):
-            raise TypeError(
-                bc.FAIL + "ERROR: number of tris must equal the number of verts in collision mesh." + bc.ENDC
-            )
+        # if not len(self.params["verts"]) == len(self.params["tris"]):
+        #     raise TypeError(
+        #         bc.FAIL + "ERROR: number of tris must equal the number of verts in collision mesh." + bc.ENDC
+        #     )
 
+        self.file = self.params["file"]
         self.verts = np.array(self.params["verts"])
         self.tris = np.array(self.params["tris"])
 
@@ -530,7 +703,31 @@ class Collision_Mesh(Collision_Object):
         self.make_rviz_marker()
 
     def make_rviz_marker(self):
-        print(bc.WARNING + "WARNING: Mesh collision object not supported in rviz visualization" + bc.ENDC)
-        self.marker.scale.x = 0.0001
-        self.marker.scale.y = 0.0001
-        self.marker.scale.z = 0.0001
+        # # print(bc.WARNING + "WARNING: Mesh collision object not supported in rviz visualization" + bc.ENDC)
+        # self.marker.type = self.marker.MESH_RESOURCE
+        # self.marker.mesh_resource = self.file
+        # self.marker.mesh_use_embedded_materials = False
+        # self.marker.scale.x = 1
+        # self.marker.scale.y = 1
+        # self.marker.scale.z = 1
+
+        self.marker.header.frame_id = "common_world"
+        self.marker.header.stamp = rospy.Time()
+        self.marker.id = 27
+        self.marker.color.a = 0.4
+        self.marker.color.g = 1.0
+        self.marker.color.b = 0.7
+        self.marker.text = "test_shape"
+        self.marker.type = self.marker.MESH_RESOURCE
+        self.marker.mesh_resource = "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl"
+        self.marker.mesh_use_embedded_materials = False
+        self.marker.scale.x = 3
+        self.marker.scale.y = 3
+        self.marker.scale.z = 3
+        self.marker.pose.position.x = 0.0
+        self.marker.pose.position.y = 0.0
+        self.marker.pose.position.z = 0.0
+        self.marker.pose.orientation.w = 1.0
+        self.marker.pose.orientation.x = 0.0
+        self.marker.pose.orientation.y = 0.0
+        self.marker.pose.orientation.z = 0.0

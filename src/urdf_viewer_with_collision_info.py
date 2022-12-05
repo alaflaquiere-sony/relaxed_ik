@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     prev_state = []
 
-    rate = rospy.Rate(5.0)
+    rate = rospy.Rate(0.1)
     while not rospy.is_shutdown():
         tf_pub.sendTransform(
             (0, 0, 0), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), "common_world", fixed_frame
