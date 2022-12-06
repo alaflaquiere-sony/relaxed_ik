@@ -62,10 +62,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        camera_view_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         panda_link0:
           Alpha: 1
           Show Axes: false
@@ -161,10 +157,6 @@ Visualization Manager:
           Show Trail: false
           Value: true
         tool:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        world:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -270,5 +262,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 2596
-  X: 1145
-  Y: 149
+  X: 4525
+  Y: 86

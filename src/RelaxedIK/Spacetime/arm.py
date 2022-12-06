@@ -1,18 +1,17 @@
 __author__ = "gleicher"
 
 # stuff for doing articulated figures
-import RelaxedIK.Spacetime.robot_function as robot_function
-
-import math
-
-# import adInterface as AD
-import numpy as N
-from numbers import Number
 import copy
+import math
 
 # from numba import jitclass
 import time
+from numbers import Number
 
+# import adInterface as AD
+import numpy as N
+
+import RelaxedIK.Spacetime.robot_function as robot_function
 
 # sin = AD.MATH.sin
 # cos = AD.MATH.cos
@@ -388,78 +387,119 @@ class Arm(robot_function.RobotFunction):
     def getFrames(self, state):
         """
         given the state vector, return all the points
-        this is really performance critical for automatic differentiaiton
+        this is really performance critical for automatic differentiation
         so try to figure out if we need a fast path
         :param state:
         :return:
         """
-        try:
-            if state.dtype == object:
-                do_ad = True
-            else:
-                do_ad = False
-        except:
-            do_ad = True  # be conservative
+        # try:
+        #     if state.dtype == object:
+        #         do_ad = True
+        #     else:
+        #         do_ad = False
+        # except:
+        #     do_ad = True  # be conservative
 
-        do_ad = False
-        pt = N.array(self.dispOffset)
-        pts = [self.dispOffset]
-        rot = self.rotOffsets[0]
-        frames = [rot]
-        axis_idx = 0
+        # do_ad = False
+        # pt = N.array(self.dispOffset)
+        # pts = [self.dispOffset]
+        # rot = self.rotOffsets[0]
+        # frames = [rot]
+        # axis_idx = 0
 
-        for i, disp in enumerate(self.displacements):
-            if self.joint_types[i] == "revolute" or self.joint_types[i] == "continuous":
-                axis = self.axes[axis_idx]
-                if self.varsPerJoint == 1:
-                    if do_ad == False:
-                        if axis[0] == "-":
-                            s = math.sin(-state[axis_idx])
-                            c = math.cos(-state[axis_idx])
-                        else:
-                            s = math.sin(state[axis_idx])
-                            c = math.cos(state[axis_idx])
-                    else:
-                        if axis[0] == "-":
-                            s = sin(-state[axis_idx])
-                            c = cos(-state[axis_idx])
-                        else:
-                            s = sin(state[axis_idx])
-                            c = cos(state[axis_idx])
+        # for i, disp in enumerate(self.displacements):
+        #     if self.joint_types[i] == "revolute" or self.joint_types[i] == "continuous":
+        #         axis = self.axes[axis_idx]
+        #         if self.varsPerJoint == 1:
+        #             if do_ad == False:
+        #                 if axis[0] == "-":
+        #                     s = math.sin(-state[axis_idx])
+        #                     c = math.cos(-state[axis_idx])
+        #                 else:
+        #                     s = math.sin(state[axis_idx])
+        #                     c = math.cos(state[axis_idx])
+        #             else:
+        #                 if axis[0] == "-":
+        #                     s = sin(-state[axis_idx])
+        #                     c = cos(-state[axis_idx])
+        #                 else:
+        #                     s = sin(state[axis_idx])
+        #                     c = cos(state[axis_idx])
+        #         else:
+        #             s, c = normSC(state[i * 2], state[i * 2 + 1])
+
+        #         axis_idx += 1
+
+        #     if self.joint_types[i] == "prismatic":
+        #         axis = self.axes[axis_idx]
+        #         if axis == "x":
+        #             self.displacements[i][0] = self.original_displacements[i][0] + state[axis_idx]
+        #         elif axis == "y":
+        #             self.displacements[i][1] = self.original_displacements[i][1] + state[axis_idx]
+        #         elif axis == "z":
+        #             self.displacements[i][2] = self.original_displacements[i][2] + state[axis_idx]
+        #         else:
+        #             raise Exception("invalid prismatic joint.  Axis must be [1 0 0], [0 1 0], or [0 0 1]")
+
+        #         axis_idx += 1
+        #         # since we know that the rot matrix doesn't change, and that
+        #         # this is an affine thing, we can do this a bit more quickly
+        #         # lmat = N.dot(rotMatrix(axis,s,c) , transMatrix(self.displacements[i]))
+
+        #     if self.joint_types[i] == "revolute" or self.joint_types[i] == "continuous":
+        #         rmat = rot3(axis, s, c)
+        #         rot = rot.dot(rmat)
+
+        #     pt = rot.dot(self.displacements[i]) + pt
+
+        #     if self.rotOffsets:
+        #         if not (self.rotOffsets[i + 1] is None):
+        #             rot = rot.dot(self.rotOffsets[i + 1])
+
+        #     # print end - start
+        #     pts.append(pt)
+        #     frames.append(rot)
+
+        # >>>>> DEBUG
+        import numpy as np
+        from scipy.spatial.transform import Rotation
+
+        pts = []
+        frames = []
+        cum_transform = np.eye(4)
+        all_translations = [self.dispOffset] + self.displacements
+        non_fixed_joints_counter = 0
+        for i, (trans, rot) in enumerate(zip(all_translations, self.rotOffsets)):
+            joint_type = (
+                "fixed" if i == (len(all_translations) - 1) else self.joint_types[i]
+            )  # the last frame is not encoded as fixed in the info_file...
+            fix_transform = np.vstack((np.hstack((rot, np.array(trans).reshape(-1, 1))), np.array([0, 0, 0, 1])))
+            if joint_type == "revolute":
+                if self.axes[non_fixed_joints_counter] == "z":
+                    curr_transform = np.vstack(
+                        (
+                            np.hstack(
+                                (
+                                    Rotation.from_euler("xyz", [0.0, 0.0, state[non_fixed_joints_counter]]).as_matrix(),
+                                    np.zeros((3, 1)),
+                                )
+                            ),
+                            np.array([0, 0, 0, 1]),
+                        )
+                    )
+                    non_fixed_joints_counter += 1
                 else:
-                    s, c = normSC(state[i * 2], state[i * 2 + 1])
+                    curr_transform = -99
+                    print("ERROR - NON-Z ROTATIONS NOT IMPLEMENTED YET")  # TODO
+            elif joint_type in ["continuous", "prasmatic"]:
+                curr_transform = -99
+                print("ERROR - NOT NON-REVOLUTE JOINTS NOT IMPLEMENTED YET")  # TODO
 
-                axis_idx += 1
+            cum_transform = cum_transform @ fix_transform @ curr_transform
+            pts.append(cum_transform[:3, -1])
+            frames.append(cum_transform[:3, :3])
+        # <<<<< DEBUG
 
-            if self.joint_types[i] == "prismatic":
-                axis = self.axes[axis_idx]
-                if axis == "x":
-                    self.displacements[i][0] = self.original_displacements[i][0] + state[axis_idx]
-                elif axis == "y":
-                    self.displacements[i][1] = self.original_displacements[i][1] + state[axis_idx]
-                elif axis == "z":
-                    self.displacements[i][2] = self.original_displacements[i][2] + state[axis_idx]
-                else:
-                    raise Exception("invalid prismatic joint.  Axis must be [1 0 0], [0 1 0], or [0 0 1]")
-
-                axis_idx += 1
-                # since we know that the rot matrix doesn't change, and that
-                # this is an affine thing, we can do this a bit more quickly
-                # lmat = N.dot(rotMatrix(axis,s,c) , transMatrix(self.displacements[i]))
-
-            if self.joint_types[i] == "revolute" or self.joint_types[i] == "continuous":
-                rmat = rot3(axis, s, c)
-                rot = rot.dot(rmat)
-
-            pt = rot.dot(self.displacements[i]) + pt
-
-            if self.rotOffsets:
-                if not (self.rotOffsets[i + 1] is None):
-                    rot = rot.dot(self.rotOffsets[i + 1])
-
-            # print end - start
-            pts.append(pt)
-            frames.append(rot)
         return pts, frames
 
     def getJacobian(self, state):

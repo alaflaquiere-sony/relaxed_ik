@@ -1,13 +1,13 @@
 import fcl
 import numpy as np
-import yaml
-from RelaxedIK.Utils.colors import bcolors as bc
-from visualization_msgs.msg import Marker
 import rospy
-import RelaxedIK.Utils.transformations as T
 import trimesh
+import yaml
+from visualization_msgs.msg import Marker, MarkerArray
 
-# >>>>> DEBUG
+import RelaxedIK.Utils.transformations as T
+from RelaxedIK.Utils.colors import bcolors as bc
+
 CAPSULE_DATA_PANDA = [
     {
         "name": "panda_link0",
@@ -82,39 +82,53 @@ CAPSULE_DATA_PANDA = [
         "radius": 0.07,
     },
 ]
-mesh_data = trimesh.exchange.stl.load_stl(
+mesh_gripper_base = trimesh.exchange.stl.load_stl(
     open(
         "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl",
         "rb",
     )
 )
-# mesh = trimesh.Trimesh(**mesh_data)
+mesh_finger_left = trimesh.exchange.stl.load_stl(
+    open(
+        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
+        "rb",
+    )
+)
+mesh_finger_right = trimesh.exchange.stl.load_stl(
+    open(
+        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
+        "rb",
+    )
+)
 MESHES_DATA_PANDA = [
     {
         "name": "robotiq_85_base_link",
-        "frame": 8,
+        "frame": 10,
         "rpy": [0, 0, 0],
         "xyz": [0, 0, 0],
         "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl",
-        "verts": mesh_data["vertices"],  # duplicates are removed in `mesh`, so I have to use the original data`
-        "tris": mesh_data["faces"],
+        "verts": mesh_gripper_base["vertices"],
+        "tris": mesh_gripper_base["faces"],
     },
-    # {
-    #     "name": "finger_left",
-    #     "frame": 8,
-    #     "rpy": [0, 0, 0],
-    #     "xyz": [1, 0, 0],
-    #     "mesh_file": "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
-    # },
-    # {
-    #     "name": "finger_right",
-    #     "frame": 8,
-    #     "rpy": [0, 0, 0],
-    #     "xyz": [-1, 0, 0],
-    #     "mesh_file": "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_right.stl",
-    # },
+    {
+        "name": "finger_left",
+        "frame": 10,
+        "rpy": [3.14159265, 0.0, 3.14159265],
+        "xyz": [1.04459598e-01, 5.02994082e-02, 7.77642643e-15],
+        "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
+        "verts": mesh_finger_left["vertices"],
+        "tris": mesh_finger_left["faces"],
+    },
+    {
+        "name": "finger_right",
+        "frame": 10,
+        "rpy": [0.0, 0.0, -3.14159265],
+        "xyz": [0.1044596, -0.05029941, 0.0],
+        "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_right.stl",
+        "verts": mesh_finger_right["vertices"],
+        "tris": mesh_finger_right["faces"],
+    },
 ]
-# <<<<< DEBUG
 
 
 class Collision_Object_Container:
@@ -122,6 +136,8 @@ class Collision_Object_Container:
         self.collision_objects = []
         f = open(yaml_path)
         y = yaml.load(f, yaml.SafeLoader)
+        self.markers_collection = MarkerArray()
+        self.pub = rospy.Publisher("visualization_marker_array", MarkerArray, queue_size=10)
 
         keys = y.keys()
         for k in keys:
@@ -158,15 +174,8 @@ class Collision_Object_Container:
         self.set_rviz_ids()
 
     def set_rviz_ids(self):
-        i = 0
-        for c in self.collision_objects:
-            if type(c.marker) is list:
-                for cc in c.marker:
-                    cc.id = i
-                    i += 1
-            else:
-                c.marker.id = i
-                i += 1
+        for i, m in enumerate(self.markers_collection.markers):
+            m.id = i
 
     def get_min_distance(self, ab):
         a, b = ab
@@ -176,24 +185,10 @@ class Collision_Object_Container:
         self.request = fcl.DistanceRequest()
         self.result = fcl.DistanceResult()
 
-        ret = fcl.distance(obja, objb, self.request, self.result)
+        _ = fcl.distance(obja, objb, self.request, self.result)
         return self.result.min_distance
 
-    ######################################################  Alban 2022-11-29
     def add_collision_objects_from_robot(self, robot, exclusion=[]):
-        numDOF = robot.numDOF
-
-        frames_list = robot.getFrames(numDOF * [0])
-
-        # >>>>> DEBUG
-        # TODO: this is not useful in this function, but good as a note for now
-        transforms_wrt_panda_link = [np.eye(4)]  # adding the transform for panda_link0
-        frames = frames_list[0]  # get the first arm's frames
-        for i in range(len(frames[0]) - 1):  # remove the last one that is not a true joint
-            transform = np.vstack(
-                (np.hstack((np.array(frames[1][i]), np.array(frames[0][i]).reshape(-1, 1))), np.array([0, 0, 0, 1]))
-            )
-            transforms_wrt_panda_link.append(transform)
 
         # create a capsule
         i = 0
@@ -207,6 +202,8 @@ class Collision_Object_Container:
             )
             capsule.type = "robot_link"
             self.collision_objects.append(capsule)
+            for marker in capsule.marker:
+                self.markers_collection.markers.append(marker)
             i += 1
         for m_data in MESHES_DATA_PANDA:
             mesh = Collision_Mesh.init_with_arguments(
@@ -218,157 +215,41 @@ class Collision_Object_Container:
             )
             mesh.type = "robot_link"
             self.collision_objects.append(mesh)
+            self.markers_collection.markers.append(mesh.marker)
             i += 1
-        # <<<<< DEBUG
-
-        # for arm_idx in range(len(frames_list)):
-        #     frames = frames_list[arm_idx]
-        #     jtPts = frames[0]
-        #     numLinks = len(jtPts) - 1
-        #     for link_i in range(numLinks):
-        #         curr_idx = numLinks * arm_idx + link_i
-        #         if curr_idx not in exclusion:
-        #             ptA = jtPts[link_i]
-        #             ptB = jtPts[link_i + 1]
-        #             midPt = ptA + 0.5 * (ptB - ptA)
-        #             dis = np.linalg.norm(ptA - ptB)
-        #             if dis < 0.02:
-        #                 continue
-
-        #             cylinder = Collision_Cylinder.init_with_arguments(
-        #                 "robotLink_" + str(arm_idx) + "_" + str(link_i),
-        #                 curr_idx,
-        #                 [0, 0, 0],
-        #                 midPt,
-        #                 [self.robot_link_radius, dis],
-        #             )
-        #             cylinder.type = "robot_link"
-        #             self.collision_objects.append(cylinder)
-
-        #             sphere1 = Collision_Sphere.init_with_arguments(
-        #                 "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_up",
-        #                 curr_idx,
-        #                 [0, 0, 0],
-        #                 ptA,
-        #                 self.robot_link_radius,
-        #             )
-        #             sphere1.type = "robot_link"
-        #             self.collision_objects.append(sphere1)
-
-        #             sphere2 = Collision_Sphere.init_with_arguments(
-        #                 "robotLink_" + str(arm_idx) + "_" + str(link_i) + "_down",
-        #                 curr_idx,
-        #                 [0, 0, 0],
-        #                 ptB,
-        #                 self.robot_link_radius,
-        #             )
-        #             sphere2.type = "robot_link"
-        #             self.collision_objects.append(sphere2)
 
         self.set_rviz_ids()
 
-    ######################################################
-
     def update_all_transforms(self, all_frames):
 
-        positions = []
-        rotations = []
-        for f in all_frames:
-            for i, p in enumerate(f[0]):
-                positions.append(f[0][i])
-                rotations.append(f[1][i])
+        arm_idx = 0
+        positions = all_frames[arm_idx][0]
+        rotations = all_frames[arm_idx][1]
 
-        # >>>>> DEBUG
         # the transform of the robot base (panda_link0) is Identify
-        positions = [np.array([0, 0, 0])]
-        rotations = [np.eye(3)]
-        frames = all_frames[0]
-        for i in range(len(frames[0]) - 1):  # remove the last one that is not a true joint
-            positions.append(frames[0][i])
-            rotations.append(frames[1][i])
-        # <<<<< DEBUG
+        positions.insert(0, np.array([0, 0, 0]))
+        rotations.insert(0, np.eye(3))
 
         for c in self.collision_objects:
-            if c.type == "robot_link":
-                # name = c.name
-                # name_arr = name.split("_")
-                # arm_id = int(name_arr[1])
-                # link_id = int(name_arr[2])
-                # ptA = all_frames[arm_id][0][link_id]
-                # ptB = all_frames[arm_id][0][link_id + 1]
-                # midPt = ptA + 0.5 * (ptB - ptA)
-                # if len(name_arr) > 3:  # this is a sphere used to create a capsule
-                #     if name_arr[3] == "up":
-                #         final_pos = ptA
-                #     elif name_arr[3] == "down":
-                #         final_pos = ptB
-                #     else:
-                #         print("Error in marker name")
-                # else:
-                #     final_pos = midPt
+            coordinate_frame = c.coordinate_frame
 
-                # rot_mat = np.zeros((3, 3))
-                # z = ptB - ptA
-                # norm = max(np.linalg.norm(z), 0.000001)
-                # z = (1.0 / norm) * z
-                # up = np.array([0, 0, 1])
-                # if np.dot(z, up) == 1.0:
-                #     up = np.array([1, 0, 0])
-                # x = np.cross(up, z)
-                # y = np.cross(z, x)
-                # rot_mat[:, 0] = x
-                # rot_mat[:, 1] = y
-                # rot_mat[:, 2] = z
+            rot_mat = rotations[coordinate_frame]
+            final_pos = positions[coordinate_frame]
 
-                # final_quat = T.quaternion_from_matrix(rot_mat)
-                coordinate_frame = c.coordinate_frame
-                # first, do local transforms
-                if coordinate_frame >= len(rotations):
-                    rot_mat = rotations[-1]
-                    final_pos = positions[-1]
-                else:
-                    rot_mat = rotations[coordinate_frame]
-                    final_pos = positions[coordinate_frame]
+            local_rotation = c.quaternion
+            final_quat = T.quaternion_from_matrix(rot_mat)
+            final_quat = T.quaternion_multiply(final_quat, local_rotation)
 
-                final_quat = T.quaternion_from_matrix(rot_mat)
-
-                local_translation = np.array(c.translation)
-                rotated_local_translation = np.dot(rot_mat, local_translation)
-                final_pos = final_pos + rotated_local_translation
-
-                local_rotation = c.quaternion
-                final_quat = T.quaternion_multiply(local_rotation, final_quat)
-            else:
-                coordinate_frame = c.coordinate_frame
-                # first, do local transforms
-                frame_len = len(positions)
-                if coordinate_frame == 0:
-                    rot_mat = rotations[0]
-                    final_pos = positions[0]
-                elif coordinate_frame >= frame_len:
-                    rot_mat = rotations[frame_len - 1]
-                    final_pos = positions[frame_len - 1]
-                else:
-                    rot_mat = rotations[coordinate_frame]
-                    final_pos = positions[coordinate_frame - 1]
-
-                final_quat = T.quaternion_from_matrix(rot_mat)
-
-                local_translation = np.array(c.translation)
-                rotated_local_translation = np.dot(rot_mat, local_translation)
-                final_pos = final_pos + rotated_local_translation
-
-                local_rotation = c.quaternion
-                final_quat = T.quaternion_multiply(local_rotation, final_quat)
+            local_translation = np.array(c.translation)
+            rotated_local_translation = np.dot(rot_mat, local_translation)
+            final_pos = final_pos + rotated_local_translation
 
             c.update_transform(final_pos, final_quat)
 
     def draw_all(self):
         for c in self.collision_objects:
-            if c.__class__ == Collision_Mesh:
-                continue
-            else:
-                c.draw_rviz()
+            c.draw_rviz()
+        self.pub.publish(self.markers_collection)
 
     def __str__(self):
         return str([str(c.name) for c in self.collision_objects])
@@ -385,7 +266,7 @@ class Collision_Object:
         self.params = collision_dict["parameters"]
         self.id = 0
         self.type = ""
-        self.pub = rospy.Publisher("visualization_marker", Marker, queue_size=10)
+        # self.pub = rospy.Publisher("visualization_marker", Marker, queue_size=10)
         self.make_rviz_marker_super()
 
     @classmethod
@@ -414,7 +295,6 @@ class Collision_Object:
             self.marker[0].pose.orientation.y = rotation[2]
             self.marker[0].pose.orientation.z = rotation[3]
             # up sphere
-            # TODO set proper position
             rotation_matrix = T.quaternion_matrix(rotation)[:3, :3]
             up_translaton = np.dot(rotation_matrix, np.array([0, 0, self.lz / 2]).reshape(-1, 1))
             self.marker[1].pose.position.x = translation[0] + up_translaton[0]
@@ -425,7 +305,6 @@ class Collision_Object:
             self.marker[1].pose.orientation.y = rotation[2]
             self.marker[1].pose.orientation.z = rotation[3]
             # down sphere
-            # TODO set proper position
             down_translaton = np.dot(rotation_matrix, np.array([0, 0, -self.lz / 2]).reshape(-1, 1))
             self.marker[2].pose.position.x = translation[0] + down_translaton[0]
             self.marker[2].pose.position.y = translation[1] + down_translaton[1]
@@ -434,14 +313,6 @@ class Collision_Object:
             self.marker[2].pose.orientation.x = rotation[1]
             self.marker[2].pose.orientation.y = rotation[2]
             self.marker[2].pose.orientation.z = rotation[3]
-        elif type(self) == Collision_Mesh:
-            self.marker.pose.position.x = 0.0
-            self.marker.pose.position.y = 0.0
-            self.marker.pose.position.z = 0.0
-            self.marker.pose.orientation.w = 1.0
-            self.marker.pose.orientation.x = 0.0
-            self.marker.pose.orientation.y = 0.0
-            self.marker.pose.orientation.z = 0.0
         else:
             self.marker.pose.position.x = translation[0]
             self.marker.pose.position.y = translation[1]
@@ -515,35 +386,9 @@ class Collision_Object:
             for c in self.marker:
                 c.header.stamp.secs = rospy.get_rostime().secs
                 c.header.stamp.nsecs = rospy.get_rostime().nsecs
-                self.pub.publish(c)
-        elif type(self) == Collision_Mesh:
-            self.marker.header.frame_id = "common_world"
-            self.marker.header.stamp = rospy.Time()
-            self.marker.id = 27
-            self.marker.color.a = 0.4
-            self.marker.color.g = 1.0
-            self.marker.color.b = 0.7
-            self.marker.text = "test_shape"
-            self.marker.type = self.marker.MESH_RESOURCE
-            self.marker.mesh_resource = "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl"
-            self.marker.mesh_use_embedded_materials = False
-            self.marker.scale.x = 3
-            self.marker.scale.y = 3
-            self.marker.scale.z = 3
-            self.marker.pose.position.x = 0.0
-            self.marker.pose.position.y = 0.0
-            self.marker.pose.position.z = 0.0
-            self.marker.pose.orientation.w = 1.0
-            self.marker.pose.orientation.x = 0.0
-            self.marker.pose.orientation.y = 0.0
-            self.marker.pose.orientation.z = 0.0
-            self.marker.header.stamp.secs = rospy.get_rostime().secs
-            self.marker.header.stamp.nsecs = rospy.get_rostime().nsecs
-            self.pub.publish(self.marker)
         else:
             self.marker.header.stamp.secs = rospy.get_rostime().secs
             self.marker.header.stamp.nsecs = rospy.get_rostime().nsecs
-            self.pub.publish(self.marker)
 
 
 class Collision_Box(Collision_Object):
@@ -685,11 +530,6 @@ class Collision_Mesh(Collision_Object):
                 + bc.ENDC
             )
 
-        # if not len(self.params["verts"]) == len(self.params["tris"]):
-        #     raise TypeError(
-        #         bc.FAIL + "ERROR: number of tris must equal the number of verts in collision mesh." + bc.ENDC
-        #     )
-
         self.file = self.params["file"]
         self.verts = np.array(self.params["verts"])
         self.tris = np.array(self.params["tris"])
@@ -703,31 +543,9 @@ class Collision_Mesh(Collision_Object):
         self.make_rviz_marker()
 
     def make_rviz_marker(self):
-        # # print(bc.WARNING + "WARNING: Mesh collision object not supported in rviz visualization" + bc.ENDC)
-        # self.marker.type = self.marker.MESH_RESOURCE
-        # self.marker.mesh_resource = self.file
-        # self.marker.mesh_use_embedded_materials = False
-        # self.marker.scale.x = 1
-        # self.marker.scale.y = 1
-        # self.marker.scale.z = 1
-
-        self.marker.header.frame_id = "common_world"
-        self.marker.header.stamp = rospy.Time()
-        self.marker.id = 27
-        self.marker.color.a = 0.4
-        self.marker.color.g = 1.0
-        self.marker.color.b = 0.7
-        self.marker.text = "test_shape"
         self.marker.type = self.marker.MESH_RESOURCE
-        self.marker.mesh_resource = "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl"
+        self.marker.mesh_resource = self.file
         self.marker.mesh_use_embedded_materials = False
-        self.marker.scale.x = 3
-        self.marker.scale.y = 3
-        self.marker.scale.z = 3
-        self.marker.pose.position.x = 0.0
-        self.marker.pose.position.y = 0.0
-        self.marker.pose.position.z = 0.0
-        self.marker.pose.orientation.w = 1.0
-        self.marker.pose.orientation.x = 0.0
-        self.marker.pose.orientation.y = 0.0
-        self.marker.pose.orientation.z = 0.0
+        self.marker.scale.x = 1
+        self.marker.scale.y = 1
+        self.marker.scale.z = 1

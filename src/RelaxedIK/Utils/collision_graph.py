@@ -1,7 +1,71 @@
-from RelaxedIK.Utils.collision_utils import Collision_Object_Container
-import numpy as np
 import itertools
 import math
+
+import numpy as np
+
+from RelaxedIK.Utils.collision_utils import Collision_Object_Container
+
+# #
+# pass
+# import numpy as np
+# from scipy.spatial.transform import Rotation
+
+# R_right_inner_knuckle = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [0, 0, 0]).as_matrix(),
+#                 np.array([0.06142, -0.0127, 0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# R_left_inner_knuckle = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [3.14159265359, 0.0, 0.0]).as_matrix(),
+#                 np.array([0.06142, 0.0127, 0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# R_right_finger_tip = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [0, 0, 3.14159265359]).as_matrix(),
+#                 np.array([0.04303959807, -0.03759940821, 0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# R_left_finger_tip = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [0, 0, 3.14159265359]).as_matrix(),
+#                 np.array([0.04303959807, -0.03759940821, 0.0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# bigR_right = R_right_inner_knuckle @ R_right_finger_tip
+# Rotation.from_matrix(bigR_right[:3, :3]).as_euler("xyz")
+# bigR_right[:3, -1]
+
+# bigR_left = R_left_inner_knuckle @ R_left_finger_tip
+# Rotation.from_matrix(bigR_left[:3, :3]).as_euler("xyz")
+# bigR_left[:3, -1]
+# #
 
 
 class Collision_Graph:
@@ -37,7 +101,6 @@ class Collision_Graph:
             dis = self.c.get_min_distance(pair)
             if dis == -1:
                 dis = 0.0
-            # print dis
 
             c = c_values[l1, l2]
             if not c == 0.0:

@@ -10,16 +10,18 @@ AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 """
 ######################################################################################################
 
-from start_here import urdf_file_name, fixed_frame, joint_ordering
-import rospy
-import roslaunch
-import tf
 import os
-from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
-from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
+
+import roslaunch
+import rospy
+import tf
 from sensor_msgs.msg import JointState
-from RelaxedIK.Utils.ros_utils import draw_text_in_rviz
 from visualization_msgs.msg import Marker
+
+from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file
+from RelaxedIK.Utils.ros_utils import draw_text_in_rviz
+from RelaxedIK.Utils.yaml_utils import get_relaxedIK_yaml_obj
+from start_here import fixed_frame, joint_ordering, urdf_file_name
 
 joint_state = None
 
@@ -59,7 +61,7 @@ if __name__ == "__main__":
 
     prev_state = []
 
-    rate = rospy.Rate(0.1)
+    rate = rospy.Rate(15)
     while not rospy.is_shutdown():
         tf_pub.sendTransform(
             (0, 0, 0), tf.transformations.quaternion_from_euler(0, 0, 0), rospy.Time.now(), "common_world", fixed_frame
@@ -88,6 +90,6 @@ if __name__ == "__main__":
                     marker_pub, "common_world", "No Collision", [0, 0.4, 1.0], 0.09, [0.0, 1.0, 0.0, 0.4], id=10000
                 )
 
-    # draw_text_in_rviz()
+        # draw_text_in_rviz()
 
-    rate.sleep()
+        rate.sleep()

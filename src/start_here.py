@@ -100,7 +100,7 @@ joint_names = [
         "panda_joint8",
         "robotiq_85_coupling_joint",
         "robotiq_85_base_joint",
-        "tool_joint",
+        # "tool_joint",
     ]
 ]
 ######################################################################################################
