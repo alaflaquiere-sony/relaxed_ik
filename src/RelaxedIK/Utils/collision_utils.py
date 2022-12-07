@@ -81,6 +81,14 @@ CAPSULE_DATA_PANDA = [
         "length": 0.14,
         "radius": 0.07,
     },
+    {
+        "name": "temp_gripper",
+        "frame": 10,
+        "rpy": [0, 0, 0],
+        "xyz": [0.1, 0, 0],
+        "length": 0.1,
+        "radius": 0.02,
+    },
 ]
 mesh_gripper_base = trimesh.exchange.stl.load_stl(
     open(

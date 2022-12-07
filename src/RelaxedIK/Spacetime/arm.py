@@ -10,6 +10,7 @@ from numbers import Number
 
 # import adInterface as AD
 import numpy as N
+from scipy.spatial.transform import Rotation
 
 import RelaxedIK.Spacetime.robot_function as robot_function
 
@@ -461,30 +462,27 @@ class Arm(robot_function.RobotFunction):
         #     frames.append(rot)
 
         # >>>>> DEBUG
-        import numpy as np
-        from scipy.spatial.transform import Rotation
-
         pts = []
         frames = []
-        cum_transform = np.eye(4)
+        cum_transform = N.eye(4)
         all_translations = [self.dispOffset] + self.displacements
         non_fixed_joints_counter = 0
         for i, (trans, rot) in enumerate(zip(all_translations, self.rotOffsets)):
             joint_type = (
                 "fixed" if i == (len(all_translations) - 1) else self.joint_types[i]
             )  # the last frame is not encoded as fixed in the info_file...
-            fix_transform = np.vstack((np.hstack((rot, np.array(trans).reshape(-1, 1))), np.array([0, 0, 0, 1])))
+            fix_transform = N.vstack((N.hstack((rot, N.array(trans).reshape(-1, 1))), N.array([0, 0, 0, 1])))
             if joint_type == "revolute":
                 if self.axes[non_fixed_joints_counter] == "z":
-                    curr_transform = np.vstack(
+                    curr_transform = N.vstack(
                         (
-                            np.hstack(
+                            N.hstack(
                                 (
                                     Rotation.from_euler("xyz", [0.0, 0.0, state[non_fixed_joints_counter]]).as_matrix(),
-                                    np.zeros((3, 1)),
+                                    N.zeros((3, 1)),
                                 )
                             ),
-                            np.array([0, 0, 0, 1]),
+                            N.array([0, 0, 0, 1]),
                         )
                     )
                     non_fixed_joints_counter += 1
