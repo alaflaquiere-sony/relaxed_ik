@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /RobotModel1
+        - /RobotModel1/Links1
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.592391312122345
@@ -167,10 +169,52 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        common_world:
+          Value: false
+        panda_link0:
+          Value: false
+        panda_link1:
+          Value: false
+        panda_link2:
+          Value: false
+        panda_link3:
+          Value: false
+        panda_link4:
+          Value: false
+        panda_link5:
+          Value: false
+        panda_link6:
+          Value: false
+        panda_link7:
+          Value: false
+        panda_link8:
+          Value: false
+        robotiq_85_base_link:
+          Value: false
+        robotiq_85_left_finger_link:
+          Value: false
+        robotiq_85_left_finger_tip_link:
+          Value: false
+        robotiq_85_left_inner_knuckle_link:
+          Value: false
+        robotiq_85_left_knuckle_link:
+          Value: false
+        robotiq_85_right_finger_link:
+          Value: false
+        robotiq_85_right_finger_tip_link:
+          Value: false
+        robotiq_85_right_inner_knuckle_link:
+          Value: false
+        robotiq_85_right_knuckle_link:
+          Value: false
+        robotiq_coupling_link:
+          Value: false
+        tool:
+          Value: false
       Marker Alpha: 1
       Marker Scale: 0.6000000238418579
       Name: TF
@@ -178,9 +222,35 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        panda_link0:
+          common_world:
+            {}
+          panda_link1:
+            panda_link2:
+              panda_link3:
+                panda_link4:
+                  panda_link5:
+                    panda_link6:
+                      panda_link7:
+                        panda_link8:
+                          robotiq_coupling_link:
+                            robotiq_85_base_link:
+                              robotiq_85_left_inner_knuckle_link:
+                                robotiq_85_left_finger_tip_link:
+                                  {}
+                              robotiq_85_left_knuckle_link:
+                                robotiq_85_left_finger_link:
+                                  {}
+                              robotiq_85_right_inner_knuckle_link:
+                                robotiq_85_right_finger_tip_link:
+                                  {}
+                              robotiq_85_right_knuckle_link:
+                                robotiq_85_right_finger_link:
+                                  {}
+                              tool:
+                                {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /visualization_marker
@@ -226,7 +296,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.7055606842041016
+      Distance: 1.855269193649292
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -234,17 +304,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.33655673265457153
-        Y: -0.10173344612121582
-        Z: 0.3886259198188782
+        X: 0.4454213082790375
+        Y: -0.03333169221878052
+        Z: 0.4171762466430664
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.0947977751493454
+      Pitch: 0.1297978162765503
       Target Frame: <Fixed Frame>
-      Yaw: 4.664005279541016
+      Yaw: 4.61900520324707
     Saved: ~
 Window Geometry:
   Displays:

@@ -3,6 +3,7 @@ import numpy as np
 import rospy
 import trimesh
 import yaml
+from scipy.spatial.transform import Rotation
 from visualization_msgs.msg import Marker, MarkerArray
 
 import RelaxedIK.Utils.transformations as T
@@ -96,10 +97,73 @@ mesh_finger_left = trimesh.exchange.stl.load_stl(
 )
 mesh_finger_right = trimesh.exchange.stl.load_stl(
     open(
-        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
+        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_right.stl",
         "rb",
     )
 )
+
+# #
+# pass
+# import numpy as np
+# from scipy.spatial.transform import Rotation
+
+# R_right_inner_knuckle = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [0, 0, 0]).as_matrix(),
+#                 np.array([0.06142, -0.0127, 0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# R_left_inner_knuckle = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [3.14159265359, 0.0, 0.0]).as_matrix(),
+#                 np.array([0.06142, 0.0127, 0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# R_right_finger_tip = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [0, 0, 3.14159265359]).as_matrix(),
+#                 np.array([0.04303959807, -0.03759940821, 0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# R_left_finger_tip = np.vstack(
+#     (
+#         np.hstack(
+#             (
+#                 Rotation.from_euler("xyz", [0, 0, 3.14159265359]).as_matrix(),
+#                 np.array([0.04303959807, -0.03759940821, 0.0]).reshape(-1, 1),
+#             )
+#         ),
+#         np.array([0, 0, 0, 1]),
+#     )
+# )
+
+# bigR_right = R_right_inner_knuckle @ R_right_finger_tip
+# Rotation.from_matrix(bigR_right[:3, :3]).as_euler("xyz")
+# bigR_right[:3, -1]
+
+# bigR_left = R_left_inner_knuckle @ R_left_finger_tip
+# Rotation.from_matrix(bigR_left[:3, :3]).as_euler("xyz")
+# bigR_left[:3, -1]
+# #
+
 MESHES_DATA_PANDA = [
     {
         "name": "robotiq_85_base_link",
@@ -232,17 +296,17 @@ class Collision_Object_Container:
 
         for c in self.collision_objects:
             coordinate_frame = c.coordinate_frame
-
-            rot_mat = rotations[coordinate_frame]
-            final_pos = positions[coordinate_frame]
-
-            local_rotation = c.quaternion
-            final_quat = T.quaternion_from_matrix(rot_mat)
-            final_quat = T.quaternion_multiply(final_quat, local_rotation)
-
             local_translation = np.array(c.translation)
-            rotated_local_translation = np.dot(rot_mat, local_translation)
-            final_pos = final_pos + rotated_local_translation
+            local_rotation = c.quaternion
+
+            ref_frame_translation = positions[coordinate_frame]
+            ref_frame_rotation = rotations[coordinate_frame]
+            ref_frame_rotation_quat = T.quaternion_from_matrix(ref_frame_rotation)
+
+            final_quat = T.quaternion_multiply(ref_frame_rotation_quat, local_rotation)
+
+            rotated_local_translation = np.dot(ref_frame_rotation, local_translation)
+            final_pos = ref_frame_translation + rotated_local_translation
 
             c.update_transform(final_pos, final_quat)
 
