@@ -472,6 +472,7 @@ class Arm(robot_function.RobotFunction):
                 "fixed" if i == (len(all_translations) - 1) else self.joint_types[i]
             )  # the last frame is not encoded as fixed in the info_file...
             fix_transform = N.vstack((N.hstack((rot, N.array(trans).reshape(-1, 1))), N.array([0, 0, 0, 1])))
+            curr_transform = N.eye(4)
             if joint_type == "revolute":
                 if self.axes[non_fixed_joints_counter] == "z":
                     curr_transform = N.vstack(
