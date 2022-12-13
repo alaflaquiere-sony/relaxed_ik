@@ -11,28 +11,31 @@ AND FOLLOW THE STEP-BY-STEP INSTRUCTIONS THERE.  Thanks!
 
 ######################################################################################################
 
-import rospy
-import os
-from RelaxedIK.Utils.colors import bcolors
-from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file, get_relaxedIK_yaml_obj
-import numpy.random as r
-import numpy as np
-from RelaxedIK.Utils.yaml_utils import (
-    list_of_list_of_values_to_string,
-    list_of_values_to_string,
-    list_of_values_to_csv_string,
-    list_of_list_of_values_to_csv_string,
-)
 import copy
 import math
-from sklearn import svm
-import sys, string, os
-import time
-from RelaxedIK.Utils.file_utils import *
-import yaml
+import os
 import pickle
-from sklearn.neural_network import MLPClassifier, MLPRegressor
+import string
+import sys
+import time
+
 import joblib
+import numpy as np
+import numpy.random as r
+import rospy
+import yaml
+from sklearn import svm
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+
+from RelaxedIK.relaxedIK import get_relaxedIK_from_info_file, get_relaxedIK_yaml_obj
+from RelaxedIK.Utils.colors import bcolors
+from RelaxedIK.Utils.file_utils import *
+from RelaxedIK.Utils.yaml_utils import (
+    list_of_list_of_values_to_csv_string,
+    list_of_list_of_values_to_string,
+    list_of_values_to_csv_string,
+    list_of_values_to_string,
+)
 
 
 def relu(x):
@@ -102,20 +105,6 @@ def get_input_output_pair(relaxedIK):
 def get_collision_score(relaxedIK, state):
     frames = relaxedIK.vars.robot.getFrames(state)
     return relaxedIK.vars.collision_graph.get_collision_score(frames)
-
-
-def get_highest_file_number(files):
-    if len(files) == 0:
-        return -1
-
-    highest = 0
-    for f in files:
-        s = f.split(".")
-        n = int(s[0])
-        if n > highest:
-            highest = n
-
-    return highest
 
 
 def get_random_normal(mean, sigma, dim):

@@ -1,9 +1,9 @@
-use std::fs::File;
-use std::io::prelude::*;
-use yaml_rust::{YamlLoader, Yaml};
+use crate::lib::utils_rust::shape_parser_utils::{Cuboid, Sphere};
 use nalgebra;
 use nalgebra::{DMatrix, DVector};
-use crate::lib::utils_rust::shape_parser_utils::{Cuboid, Sphere};
+use std::fs::File;
+use std::io::prelude::*;
+use yaml_rust::{Yaml, YamlLoader};
 
 pub fn get_yaml_obj(fp: String) -> Vec<Yaml> {
     let mut file = File::open(fp.as_str()).unwrap();
@@ -13,7 +13,6 @@ pub fn get_yaml_obj(fp: String) -> Vec<Yaml> {
     let docs = YamlLoader::load_from_str(contents.as_str()).unwrap();
     docs
 }
-
 
 pub struct InfoFileParser {
     pub urdf_file_name: String,
@@ -27,7 +26,7 @@ pub struct InfoFileParser {
     pub path_to_src: String,
     pub axis_types: Vec<Vec<String>>,
     pub velocity_limits: Vec<f64>,
-    pub joint_limits: Vec< [f64; 2] >,
+    pub joint_limits: Vec<[f64; 2]>,
     pub displacements: Vec<Vec<nalgebra::Vector3<f64>>>,
     pub disp_offsets: Vec<nalgebra::Vector3<f64>>,
     pub rot_offsets: Vec<Vec<Vec<f64>>>,
@@ -50,12 +49,13 @@ impl InfoFileParser {
         let path_to_src = String::from(doc["path_to_src"].as_str().unwrap());
         let mut axis_types: Vec<Vec<String>> = Vec::new();
         let mut velocity_limits: Vec<f64> = Vec::new();
-        let mut joint_limits: Vec<[ f64; 2] > = Vec::new();
+        let mut joint_limits: Vec<[f64; 2]> = Vec::new();
         let mut displacements: Vec<Vec<nalgebra::Vector3<f64>>> = Vec::new();
         let mut disp_offsets: Vec<nalgebra::Vector3<f64>> = Vec::new();
         let mut rot_offsets: Vec<Vec<Vec<f64>>> = Vec::new();
         let mut joint_types: Vec<Vec<String>> = Vec::new();
-        let joint_state_define_func_file = String::from(doc["joint_state_define_func_file"].as_str().unwrap() );
+        let joint_state_define_func_file =
+            String::from(doc["joint_state_define_func_file"].as_str().unwrap());
 
         let joint_names_arr = doc["joint_names"].as_vec().unwrap();
         for i in 0..joint_names_arr.len() {
@@ -63,18 +63,18 @@ impl InfoFileParser {
             joint_names.push(joint_names2);
             let joint_names_arr2 = joint_names_arr[i].as_vec().unwrap();
             for j in 0..joint_names_arr2.len() {
-                joint_names[i].push( String::from(joint_names_arr2[j].as_str().unwrap()) );
+                joint_names[i].push(String::from(joint_names_arr2[j].as_str().unwrap()));
             }
         }
 
         let joint_ordering_arr = doc["joint_ordering"].as_vec().unwrap();
         for i in 0..joint_ordering_arr.len() {
-            joint_ordering.push( String::from(joint_ordering_arr[i].as_str().unwrap()) );
+            joint_ordering.push(String::from(joint_ordering_arr[i].as_str().unwrap()));
         }
 
         let ee_fixed_joints_arr = doc["ee_fixed_joints"].as_vec().unwrap();
         for i in 0..ee_fixed_joints_arr.len() {
-            ee_fixed_joints.push( String::from(ee_fixed_joints_arr[i].as_str().unwrap()) );
+            ee_fixed_joints.push(String::from(ee_fixed_joints_arr[i].as_str().unwrap()));
         }
 
         let starting_config_arr = doc["starting_config"].as_vec().unwrap();
@@ -88,7 +88,7 @@ impl InfoFileParser {
             axis_types.push(str_vec);
             let axis_types_arr2 = axis_types_arr[i].as_vec().unwrap();
             for j in 0..axis_types_arr2.len() {
-                axis_types[i].push(String::from(axis_types_arr2[j].as_str().unwrap() ) );
+                axis_types[i].push(String::from(axis_types_arr2[j].as_str().unwrap()));
             }
         }
 
@@ -99,7 +99,10 @@ impl InfoFileParser {
 
         let joint_limits_arr = doc["joint_limits"].as_vec().unwrap();
         for i in 0..joint_limits_arr.len() {
-            joint_limits.push( [ joint_limits_arr[i][0].as_f64().unwrap(), joint_limits_arr[i][1].as_f64().unwrap() ] )
+            joint_limits.push([
+                joint_limits_arr[i][0].as_f64().unwrap(),
+                joint_limits_arr[i][1].as_f64().unwrap(),
+            ])
         }
 
         let displacememts_arr = doc["displacements"].as_vec().unwrap();
@@ -108,13 +111,21 @@ impl InfoFileParser {
             displacements.push(vec3_vec);
             let displacememts_arr2 = displacememts_arr[i].as_vec().unwrap();
             for j in 0..displacememts_arr2.len() {
-                displacements[i].push( nalgebra::Vector3::new( displacememts_arr2[j][0].as_f64().unwrap(), displacememts_arr2[j][1].as_f64().unwrap(), displacememts_arr2[j][2].as_f64().unwrap() ) )
+                displacements[i].push(nalgebra::Vector3::new(
+                    displacememts_arr2[j][0].as_f64().unwrap(),
+                    displacememts_arr2[j][1].as_f64().unwrap(),
+                    displacememts_arr2[j][2].as_f64().unwrap(),
+                ))
             }
         }
 
         let disp_offsets_arr = doc["disp_offsets"].as_vec().unwrap();
         for i in 0..disp_offsets_arr.len() {
-            disp_offsets.push( nalgebra::Vector3::new( disp_offsets_arr[i][0].as_f64().unwrap(), disp_offsets_arr[i][1].as_f64().unwrap(), disp_offsets_arr[i][2].as_f64().unwrap()  ) )
+            disp_offsets.push(nalgebra::Vector3::new(
+                disp_offsets_arr[i][0].as_f64().unwrap(),
+                disp_offsets_arr[i][1].as_f64().unwrap(),
+                disp_offsets_arr[i][2].as_f64().unwrap(),
+            ))
         }
 
         let rot_offsets_arr = doc["rot_offsets"].as_vec().unwrap();
@@ -123,7 +134,11 @@ impl InfoFileParser {
             rot_offsets.push(r);
             let rot_offsets_arr2 = rot_offsets_arr[i].as_vec().unwrap();
             for j in 0..rot_offsets_arr2.len() {
-                rot_offsets[i].push( vec![ rot_offsets_arr2[j][0].as_f64().unwrap(), rot_offsets_arr2[j][1].as_f64().unwrap(), rot_offsets_arr2[j][2].as_f64().unwrap() ] )
+                rot_offsets[i].push(vec![
+                    rot_offsets_arr2[j][0].as_f64().unwrap(),
+                    rot_offsets_arr2[j][1].as_f64().unwrap(),
+                    rot_offsets_arr2[j][2].as_f64().unwrap(),
+                ])
             }
         }
 
@@ -133,22 +148,37 @@ impl InfoFileParser {
             joint_types.push(str_vec);
             let joint_types_arr2 = joint_types_arr[i].as_vec().unwrap();
             for j in 0..joint_types_arr2.len() {
-                joint_types[i].push(String::from(joint_types_arr2[j].as_str().unwrap() ) );
+                joint_types[i].push(String::from(joint_types_arr2[j].as_str().unwrap()));
             }
         }
 
-
-        InfoFileParser{urdf_file_name, fixed_frame, joint_names, joint_ordering, ee_fixed_joints, starting_config, collision_file_name, collision_nn_file, path_to_src, axis_types, velocity_limits,
-            joint_limits, displacements, disp_offsets, rot_offsets, joint_types, joint_state_define_func_file}
+        InfoFileParser {
+            urdf_file_name,
+            fixed_frame,
+            joint_names,
+            joint_ordering,
+            ee_fixed_joints,
+            starting_config,
+            collision_file_name,
+            collision_nn_file,
+            path_to_src,
+            axis_types,
+            velocity_limits,
+            joint_limits,
+            displacements,
+            disp_offsets,
+            rot_offsets,
+            joint_types,
+            joint_state_define_func_file,
+        }
     }
 }
-
 
 pub struct CollisionFileParser {
     pub states: Vec<Vec<f64>>,
     pub jt_pts: Vec<Vec<f64>>,
     pub collision_scores: Vec<f64>,
-    pub split_point: f64
+    pub split_point: f64,
 }
 impl CollisionFileParser {
     pub fn from_yaml_path(fp: String) -> Self {
@@ -165,7 +195,7 @@ impl CollisionFileParser {
             states.push(s);
             let states_arr_2 = states_arr[i].as_vec().unwrap();
             for j in 0..states_arr_2.len() {
-                states[i].push( states_arr_2[j].as_f64().unwrap() )
+                states[i].push(states_arr_2[j].as_f64().unwrap())
             }
         }
 
@@ -186,17 +216,21 @@ impl CollisionFileParser {
 
         let split_point = doc["split_point"].as_f64().unwrap();
 
-        CollisionFileParser{states, jt_pts, collision_scores, split_point}
+        CollisionFileParser {
+            states,
+            jt_pts,
+            collision_scores,
+            split_point,
+        }
     }
 }
-
 
 pub struct NeuralNetParser {
     pub coefs: Vec<Vec<Vec<f64>>>,
     pub intercepts: Vec<Vec<f64>>,
     pub coef_matrices: Vec<DMatrix<f64>>,
     pub intercept_vectors: Vec<DMatrix<f64>>,
-    pub split_point: f64
+    pub split_point: f64,
 }
 impl NeuralNetParser {
     pub fn from_yaml_path(fp: String) -> Self {
@@ -214,24 +248,30 @@ impl NeuralNetParser {
         split_point = doc["split_point"].as_f64().unwrap();
 
         for i in 0..coefs.len() {
-            let mut m = DMatrix::from_element( coefs[i].len(), coefs[i][0].len(), 0.0 );
+            let mut m = DMatrix::from_element(coefs[i].len(), coefs[i][0].len(), 0.0);
             for j in 0..coefs[i].len() {
                 for k in 0..coefs[i][j].len() {
-                    m[(j,k)] = coefs[i][j][k];
+                    m[(j, k)] = coefs[i][j][k];
                 }
             }
             coef_matrices.push(m);
         }
 
         for i in 0..intercepts.len() {
-            let mut v = DMatrix::from_element(1, intercepts[i].len(),0.0);
+            let mut v = DMatrix::from_element(1, intercepts[i].len(), 0.0);
             for j in 0..intercepts[i].len() {
                 v[j] = intercepts[i][j];
             }
             intercept_vectors.push(v);
         }
 
-        Self{coefs, intercepts, coef_matrices, intercept_vectors, split_point}
+        Self {
+            coefs,
+            intercepts,
+            coef_matrices,
+            intercept_vectors,
+            split_point,
+        }
     }
 }
 
@@ -239,7 +279,7 @@ impl NeuralNetParser {
 pub struct RobotCollisionSpecFileParser {
     pub robot_link_radius: f64,
     pub cuboids: Vec<Cuboid>,
-    pub spheres: Vec<Sphere>
+    pub spheres: Vec<Sphere>,
 }
 impl RobotCollisionSpecFileParser {
     pub fn from_yaml_path(fp: String) -> Self {
@@ -263,7 +303,10 @@ impl RobotCollisionSpecFileParser {
                 let y_halflength = params[1].as_f64().unwrap();
                 let z_halflength = params[2].as_f64().unwrap();
 
-                let coordinate_frame = cuboids_list[i]["coordinate_frame"].as_str().unwrap().to_string();
+                let coordinate_frame = cuboids_list[i]["coordinate_frame"]
+                    .as_str()
+                    .unwrap()
+                    .to_string();
 
                 let rots = cuboids_list[i]["rotation"].as_vec().unwrap();
                 let rx = rots[0].as_f64().unwrap();
@@ -275,7 +318,19 @@ impl RobotCollisionSpecFileParser {
                 let ty = ts[1].as_f64().unwrap();
                 let tz = ts[2].as_f64().unwrap();
 
-                cuboids.push(Cuboid::new(name, x_halflength, y_halflength, z_halflength, coordinate_frame, rx, ry, rz, tx, ty, tz));
+                cuboids.push(Cuboid::new(
+                    name,
+                    x_halflength,
+                    y_halflength,
+                    z_halflength,
+                    coordinate_frame,
+                    rx,
+                    ry,
+                    rz,
+                    tx,
+                    ty,
+                    tz,
+                ));
             }
         }
 
@@ -287,7 +342,10 @@ impl RobotCollisionSpecFileParser {
                 let name = spheres_list[i]["name"].as_str().unwrap().to_string();
                 let radius = spheres_list[i]["parameters"].as_f64().unwrap();
 
-                let coordinate_frame = spheres_list[i]["coordinate_frame"].as_str().unwrap().to_string();
+                let coordinate_frame = spheres_list[i]["coordinate_frame"]
+                    .as_str()
+                    .unwrap()
+                    .to_string();
 
                 let ts = spheres_list[i]["translation"].as_vec().unwrap();
                 let tx = ts[0].as_f64().unwrap();
@@ -298,10 +356,13 @@ impl RobotCollisionSpecFileParser {
             }
         }
 
-        Self{robot_link_radius, cuboids, spheres}
+        Self {
+            robot_link_radius,
+            cuboids,
+            spheres,
+        }
     }
 }
-
 
 pub fn parse_list_of_floats_1(y: &Yaml) -> Vec<f64> {
     let mut ret: Vec<f64> = Vec::new();
@@ -318,7 +379,7 @@ pub fn parse_list_of_floats_2(y: &Yaml) -> Vec<Vec<f64>> {
 
     let v1 = y.as_vec().unwrap();
     for i in 0..v1.len() {
-        ret.push( parse_list_of_floats_1(&v1[i]) );
+        ret.push(parse_list_of_floats_1(&v1[i]));
     }
     ret
 }
@@ -328,7 +389,7 @@ pub fn parse_list_of_floats_3(y: &Yaml) -> Vec<Vec<Vec<f64>>> {
 
     let v1 = y.as_vec().unwrap();
     for i in 0..v1.len() {
-        ret.push( parse_list_of_floats_2(&v1[i]) );
+        ret.push(parse_list_of_floats_2(&v1[i]));
     }
     ret
 }
@@ -338,7 +399,7 @@ pub fn parse_list_of_floats_4(y: &Yaml) -> Vec<Vec<Vec<Vec<f64>>>> {
 
     let v1 = y.as_vec().unwrap();
     for i in 0..v1.len() {
-        ret.push( parse_list_of_floats_3(&v1[i]) );
+        ret.push(parse_list_of_floats_3(&v1[i]));
     }
     ret
 }
