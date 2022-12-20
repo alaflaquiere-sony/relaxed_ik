@@ -9,7 +9,7 @@ from RelaxedIK.Utils.collision_utils import Collision_Object_Container
 class Collision_Graph:
     def __init__(self, yaml_path, robot, link_exclusion_list=[]):
         self.c = Collision_Object_Container(yaml_path)
-        self.c.add_collision_objects_from_robot(robot, link_exclusion_list)
+        self.c.add_collision_objects_from_robot(yaml_path)
         self.robot = robot
         self.sample_states = self.c.sample_states
         self.num_objects = len(self.c.collision_objects)

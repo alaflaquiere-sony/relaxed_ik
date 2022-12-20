@@ -99,8 +99,6 @@ joint_names = [
         "panda_joint7",
         "panda_joint8",
         "robotiq_85_coupling_joint",
-        "robotiq_85_base_joint",
-        # "tool_joint",
     ]
 ]
 ######################################################################################################
@@ -145,7 +143,7 @@ joint_ordering = [
 #   ex1: ee_fixed_joints = ['RIGHT_HAND', 'LEFT_HAND']
 #   For example 2, using the UR5, this is a single chain robot, so it will only have a single end-effector joint
 #   ex2: ee_fixed_joints = ['ee_fixed_joint']
-ee_fixed_joints = ["tool_joint"]
+ee_fixed_joints = ["robotiq_85_base_joint"]
 ######################################################################################################
 
 

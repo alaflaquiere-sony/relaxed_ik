@@ -1,9 +1,12 @@
 __author__ = "drakita"
 
 
+import kdl_parser_py.urdf as pyurdf
+import PyKDL as kdl
 from urdf_parser_py.urdf import URDF
-from RelaxedIK.Spacetime.arm import *
 
+from RelaxedIK.Spacetime.arm import *
+from RelaxedIK.Utils.colors import *
 
 # try:
 #     from ..Spacetime.boost import Arm_ext
@@ -13,9 +16,6 @@ from RelaxedIK.Spacetime.arm import *
 #           'https://www.boost.org/doc/libs/1_67_0/more/getting_started/unix-variants.html'
 #     arm_c = False
 
-from RelaxedIK.Utils.colors import *
-import kdl_parser_py.urdf as pyurdf
-import PyKDL as kdl
 
 """
 NOTE:

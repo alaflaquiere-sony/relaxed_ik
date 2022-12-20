@@ -9,191 +9,6 @@ from visualization_msgs.msg import Marker, MarkerArray
 import RelaxedIK.Utils.transformations as T
 from RelaxedIK.Utils.colors import bcolors as bc
 
-CAPSULE_DATA_PANDA = [
-    {
-        "name": "panda_link0",
-        "frame": 0,
-        "rpy": [0, 1.5707963267948966, 0],
-        "xyz": [-0.075, 0, 0.06],
-        "length": 0.03,
-        "radius": 0.09,
-    },
-    {
-        "name": "panda_link1",
-        "frame": 1,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, -0.1915],
-        "length": 0.283,
-        "radius": 0.09,
-    },
-    {
-        "name": "panda_link2",
-        "frame": 2,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, 0],
-        "length": 0.12,
-        "radius": 0.09,
-    },
-    {
-        "name": "panda_link3",
-        "frame": 3,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, -0.145],
-        "length": 0.15,
-        "radius": 0.09,
-    },
-    {
-        "name": "panda_link4",
-        "frame": 4,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, 0],
-        "length": 0.12,
-        "radius": 0.09,
-    },
-    {
-        "name": "panda_link5",
-        "frame": 5,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, -0.26],
-        "length": 0.1,
-        "radius": 0.09,
-    },
-    {
-        "name": "panda_link5_2",
-        "frame": 5,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0.08, -0.13],
-        "length": 0.14,
-        "radius": 0.055,
-    },
-    {
-        "name": "panda_link6",
-        "frame": 6,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, -0.03],
-        "length": 0.08,
-        "radius": 0.08,
-    },
-    {
-        "name": "panda_link7",
-        "frame": 7,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, 0.01],
-        "length": 0.14,
-        "radius": 0.07,
-    },
-]
-mesh_gripper_base = trimesh.exchange.stl.load_stl(
-    open(
-        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl",
-        "rb",
-    )
-)
-mesh_finger_left = trimesh.exchange.stl.load_stl(
-    open(
-        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
-        "rb",
-    )
-)
-mesh_finger_right = trimesh.exchange.stl.load_stl(
-    open(
-        "/root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_right.stl",
-        "rb",
-    )
-)
-
-# #
-# pass
-# import numpy as np
-# from scipy.spatial.transform import Rotation
-
-# R_right_inner_knuckle = np.vstack(
-#     (
-#         np.hstack(
-#             (
-#                 Rotation.from_euler("xyz", [0, 0, 0]).as_matrix(),
-#                 np.array([0.06142, -0.0127, 0]).reshape(-1, 1),
-#             )
-#         ),
-#         np.array([0, 0, 0, 1]),
-#     )
-# )
-
-# R_left_inner_knuckle = np.vstack(
-#     (
-#         np.hstack(
-#             (
-#                 Rotation.from_euler("xyz", [3.14159265359, 0.0, 0.0]).as_matrix(),
-#                 np.array([0.06142, 0.0127, 0]).reshape(-1, 1),
-#             )
-#         ),
-#         np.array([0, 0, 0, 1]),
-#     )
-# )
-
-# R_right_finger_tip = np.vstack(
-#     (
-#         np.hstack(
-#             (
-#                 Rotation.from_euler("xyz", [0, 0, 3.14159265359]).as_matrix(),
-#                 np.array([0.04303959807, -0.03759940821, 0]).reshape(-1, 1),
-#             )
-#         ),
-#         np.array([0, 0, 0, 1]),
-#     )
-# )
-
-# R_left_finger_tip = np.vstack(
-#     (
-#         np.hstack(
-#             (
-#                 Rotation.from_euler("xyz", [0, 0, 3.14159265359]).as_matrix(),
-#                 np.array([0.04303959807, -0.03759940821, 0.0]).reshape(-1, 1),
-#             )
-#         ),
-#         np.array([0, 0, 0, 1]),
-#     )
-# )
-
-# bigR_right = R_right_inner_knuckle @ R_right_finger_tip
-# Rotation.from_matrix(bigR_right[:3, :3]).as_euler("xyz")
-# bigR_right[:3, -1]
-
-# bigR_left = R_left_inner_knuckle @ R_left_finger_tip
-# Rotation.from_matrix(bigR_left[:3, :3]).as_euler("xyz")
-# bigR_left[:3, -1]
-# #
-
-MESHES_DATA_PANDA = [
-    {
-        "name": "robotiq_85_base_link",
-        "frame": 10,
-        "rpy": [0, 0, 0],
-        "xyz": [0, 0, 0],
-        "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_base_link_simplified.stl",
-        "verts": mesh_gripper_base["vertices"],
-        "tris": mesh_gripper_base["faces"],
-    },
-    {
-        "name": "finger_left",
-        "frame": 10,
-        "rpy": [3.14159265, 0.0, 3.14159265],
-        "xyz": [1.04459598e-01, 5.02994082e-02, 7.77642643e-15],
-        "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_left.stl",
-        "verts": mesh_finger_left["vertices"],
-        "tris": mesh_finger_left["faces"],
-    },
-    {
-        "name": "finger_right",
-        "frame": 10,
-        "rpy": [0.0, 0.0, -3.14159265],
-        "xyz": [0.1044596, -0.05029941, 0.0],
-        "file": "file:///root/MOTION_CONTROL_BENCHMARK/robots/meshes/robotiq_gripper_with_tweezer/collision/robotiq_85_finger_tip_link_right.stl",
-        "verts": mesh_finger_right["vertices"],
-        "tris": mesh_finger_right["faces"],
-    },
-]
-
 
 class Collision_Object_Container:
     def __init__(self, yaml_path):
@@ -206,7 +21,7 @@ class Collision_Object_Container:
         keys = y.keys()
         for k in keys:
             if y[k] is not None:
-                if k == "robot_link_radius" or k == "sample_states" or k == "training_states" or k == "problem_states":
+                if k in ["robot_link_radius", "sample_states", "training_states", "problem_states", "collision_shapes"]:
                     continue
                 for i in range(len(y[k])):
                     if k == "boxes":
@@ -252,43 +67,49 @@ class Collision_Object_Container:
         _ = fcl.distance(obja, objb, self.request, self.result)
         return self.result.min_distance
 
-    def add_collision_objects_from_robot(self, robot, exclusion=[]):
+    def add_collision_objects_from_robot(self, yaml_path):
 
-        # create a capsule
+        f = open(yaml_path)
+        y = yaml.load(f, yaml.SafeLoader)
+
         i = 0
-        for c_data in CAPSULE_DATA_PANDA:
-            capsule = Collision_Capsule.init_with_arguments(
-                "robotLink_" + str(0) + "_" + str(i),
-                c_data["frame"],
-                c_data["rpy"],  # rot
-                c_data["xyz"],  # tran
-                [c_data["radius"], c_data["length"]],
-            )
-            capsule.type = "robot_link"
-            self.collision_objects.append(capsule)
-            for marker in capsule.marker:
-                self.markers_collection.markers.append(marker)
-            i += 1
-        for m_data in MESHES_DATA_PANDA:
-            mesh = Collision_Mesh.init_with_arguments(
-                "robotLink_" + str(0) + "_" + str(i) + "_MESH",
-                m_data["frame"],
-                m_data["rpy"],  # rot
-                m_data["xyz"],  # tran
-                {"file": m_data["file"], "verts": m_data["verts"], "tris": m_data["tris"]},
-            )
-            mesh.type = "robot_link"
-            self.collision_objects.append(mesh)
-            self.markers_collection.markers.append(mesh.marker)
-            i += 1
+        for shape in y["collision_shapes"]:
+            if shape["type"] == "capsule":
+                capsule = Collision_Capsule.init_with_arguments(
+                    "robotLink_" + str(0) + "_" + str(i),
+                    shape["frame"],
+                    shape["rpy"],  # rot
+                    shape["xyz"],  # tran
+                    [shape["radius"], shape["length"]],
+                )
+                capsule.type = "robot_link"
+                self.collision_objects.append(capsule)
+                for marker in capsule.marker:
+                    self.markers_collection.markers.append(marker)
+                i += 1
+            elif shape["type"] == "mesh":
+                mesh_data = trimesh.exchange.stl.load_stl(open(shape["file"], "rb"))
+                mesh = Collision_Mesh.init_with_arguments(
+                    "robotLink_" + str(0) + "_" + str(i) + "_MESH",
+                    shape["frame"],
+                    shape["rpy"],  # rot
+                    shape["xyz"],  # tran
+                    {"file": shape["file"], "verts": mesh_data["vertices"], "tris": mesh_data["faces"]},
+                )
+                mesh.type = "robot_link"
+                self.collision_objects.append(mesh)
+                self.markers_collection.markers.append(mesh.marker)
+                i += 1
+            else:
+                print("ERROR: other collision shapes than 'capsule' and 'mesh' are not handled yet.")
 
         self.set_rviz_ids()
 
     def update_all_transforms(self, all_frames):
 
         arm_idx = 0
-        positions = all_frames[arm_idx][0]
-        rotations = all_frames[arm_idx][1]
+        positions = all_frames[arm_idx][0].copy()  # copy necessary to not modify the all_frames variable
+        rotations = all_frames[arm_idx][1].copy()  # copy necessary to not modify the all_frames variable
 
         # the transform of the robot base (panda_link0) is Identify
         positions.insert(0, np.array([0, 0, 0]))
@@ -608,7 +429,7 @@ class Collision_Mesh(Collision_Object):
 
     def make_rviz_marker(self):
         self.marker.type = self.marker.MESH_RESOURCE
-        self.marker.mesh_resource = self.file
+        self.marker.mesh_resource = "file://" + self.file
         self.marker.mesh_use_embedded_materials = False
         self.marker.scale.x = 1
         self.marker.scale.y = 1

@@ -1,11 +1,12 @@
-import numpy as np
-from RelaxedIK.Utils.collision_graph import Collision_Graph
-from sklearn.neural_network import MLPClassifier, MLPRegressor
-import joblib
 import pickle
-
 import time
+
+import joblib
+import numpy as np
 import numpy.random as r
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+
+from RelaxedIK.Utils.collision_graph import Collision_Graph
 
 
 def frames_to_jt_pt_vec(all_frames):
@@ -71,4 +72,3 @@ class Collision_NN_Trainer:
             predicted = self.clf.predict([jt_pt_vec])
             print(predicted)
             print(self.cg.get_collision_score(frames))
-            print
