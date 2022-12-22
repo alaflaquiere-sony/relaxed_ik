@@ -1,12 +1,14 @@
+use nalgebra::{Quaternion, Unit, UnitQuaternion, Vector3};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use nalgebra::{Vector3, Quaternion, UnitQuaternion, Unit};
 
 pub struct SingleValueSubscriber<T> {
-    pub data: T
+    pub data: T,
 }
 impl<T> SingleValueSubscriber<T> {
-    pub fn new(data: T) -> Self {Self{data: data} }
+    pub fn new(data: T) -> Self {
+        Self { data: data }
+    }
 }
 
 /*
@@ -20,13 +22,16 @@ let subscriber = rosrust::subscribe("topic", 3, move |v: msg::std_msgs::UInt64| 
 
 pub struct EEPoseGoalsSubscriber {
     pub pos_goals: Vec<Vector3<f64>>,
-    pub quat_goals: Vec<UnitQuaternion<f64>>
+    pub quat_goals: Vec<UnitQuaternion<f64>>,
 }
 impl EEPoseGoalsSubscriber {
     pub fn new() -> Self {
         let pos_goals: Vec<Vector3<f64>> = Vec::new();
         let quat_goals: Vec<UnitQuaternion<f64>> = Vec::new();
-        Self{pos_goals, quat_goals}
+        Self {
+            pos_goals,
+            quat_goals,
+        }
     }
 }
 /*
@@ -47,3 +52,12 @@ let subscriber = rosrust::subscribe("/relaxed_ik/ee_pose_goals", 3, move |v: msg
 });
 */
 
+pub struct JointsAnglesSubscriber {
+    pub joints_angles: Vec<f64>,
+}
+impl JointsAnglesSubscriber {
+    pub fn new() -> Self {
+        let joints_angles: Vec<f64> = Vec::new();
+        Self { joints_angles }
+    }
+}
