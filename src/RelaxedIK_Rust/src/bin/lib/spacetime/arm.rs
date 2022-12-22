@@ -325,15 +325,15 @@ impl Arm {
         //     }
         // }
 
-        // println!("{}", "translations");
-        // for i in 0..out_positions.len() {
-        //     println!("{}: {:?}", i, out_positions[i]);
-        // }
+        println!("{}", "translations");
+        for i in 0..out_positions.len() {
+            println!("{}: {:?}", i, out_positions[i]);
+        }
 
-        // println!("{}", "quaternions");
-        // for i in 0..out_rot_quats.len() {
-        //     println!("{}: {:?}", i, out_rot_quats[i]);
-        // }
+        println!("{}", "quaternions");
+        for i in 0..out_rot_quats.len() {
+            println!("{}: {:?}", i, out_rot_quats[i]);
+        }
 
         (out_positions, out_rot_quats)
     }
