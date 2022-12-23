@@ -34,8 +34,6 @@ fn main() {
     )
     .unwrap();
 
-    rosrust::spin();
-
     let rate1 = rosrust::rate(100.);
     while arc.lock().unwrap().joints_angles.is_empty() {
         println!("waiting");
@@ -43,12 +41,12 @@ fn main() {
     }
 
     let rate = rosrust::rate(1.);
-    while rosrust::is_ok() {
-        let mut thing = &arc.lock().unwrap();
+    // while rosrust::is_ok() {
+    let mut thing = &arc.lock().unwrap();
 
-        println!("AAAAAAAAAAAAAAAAAAAAAAAAA{:?}", thing.joints_angles);
+    println!("AAAAAAAAAAAAAAAAAAAAAAAAA{:?}", thing.joints_angles);
 
-        r.vars.robot.arms[0].get_frames_immutable(&thing.joints_angles);
-        rate.sleep();
-    }
+    r.vars.robot.arms[0].get_frames_immutable(&thing.joints_angles);
+    rate.sleep();
+    // }
 }

@@ -461,7 +461,6 @@ class Arm(robot_function.RobotFunction):
         #     pts.append(pt)
         #     frames.append(rot)
 
-        # >>>>> DEBUG
         pts = []
         frames = []
         cum_transform = N.eye(4)
@@ -497,7 +496,6 @@ class Arm(robot_function.RobotFunction):
             cum_transform = cum_transform @ fix_transform @ curr_transform
             pts.append(cum_transform[:3, -1])
             frames.append(cum_transform[:3, :3])
-        # <<<<< DEBUG
 
         return pts, frames
 

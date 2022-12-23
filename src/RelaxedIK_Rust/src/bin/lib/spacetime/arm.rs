@@ -195,11 +195,6 @@ impl Arm {
         let mut out_positions: Vec<nalgebra::Vector3<f64>> = Vec::new();
         let mut out_rot_quats: Vec<nalgebra::UnitQuaternion<f64>> = Vec::new();
 
-        let mut pt: nalgebra::Vector3<f64> = self.disp_offset.clone();
-        let mut rot_quat = self.rot_offset_quats[0].clone();
-        out_positions.push(pt);
-        out_rot_quats.push(rot_quat);
-
         //>>>>>>>>>>>>>>>>>>> Alban - 21/12/2022
         let mut cumulative_quaternion =
             nalgebra::UnitQuaternion::<f64>::from_euler_angles(0., 0., 0.);
@@ -247,15 +242,19 @@ impl Arm {
                 fix_quaternion * current_quaternion;
             let temp_local_translation: nalgebra::Vector3<f64> = fix_translation; // no need to multiply with zero vector of translation coming from the rotation
 
-            cumulative_quaternion = cumulative_quaternion * temp_local_quaternion;
             cumulative_translation =
                 cumulative_quaternion * temp_local_translation + cumulative_translation;
+            cumulative_quaternion = cumulative_quaternion * temp_local_quaternion;
 
             out_positions.push(cumulative_translation.clone());
             out_rot_quats.push(cumulative_quaternion.clone());
         }
         //<<<<<<<<<<<<<<<<<<< Alban - 21/12/2022
 
+        // let mut pt: nalgebra::Vector3<f64> = self.disp_offset.clone();
+        // let mut rot_quat = self.rot_offset_quats[0].clone();
+        // out_positions.push(pt);
+        // out_rot_quats.push(rot_quat);
         // let mut joint_idx: usize = 0;
         // for i in 0..self.displacements.len() {
         //     if self.__is_revolute_or_continuous[i] {
@@ -324,16 +323,6 @@ impl Arm {
         //         out_rot_quats.push(rot_quat.clone());
         //     }
         // }
-
-        println!("{}", "translations");
-        for i in 0..out_positions.len() {
-            println!("{}: {:?}", i, out_positions[i]);
-        }
-
-        println!("{}", "quaternions");
-        for i in 0..out_rot_quats.len() {
-            println!("{}: {:?}", i, out_rot_quats[i]);
-        }
 
         (out_positions, out_rot_quats)
     }
