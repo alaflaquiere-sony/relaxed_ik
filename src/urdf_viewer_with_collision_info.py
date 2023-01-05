@@ -79,16 +79,16 @@ if __name__ == "__main__":
                 print(str(positions) + ",")
                 prev_state = js
 
-            col_val = rik.vars.collision_graph.get_collision_score_of_state(positions)
-            rik.vars.collision_graph.c.draw_all()
-            if col_val >= rik.vars.collision_graph.b_value:
-                draw_text_in_rviz(
-                    marker_pub, "common_world", "Collision", [0, 0.4, 1.0], 0.09, [1.0, 0.0, 0.0, 0.4], id=10000
-                )
-            else:
-                draw_text_in_rviz(
-                    marker_pub, "common_world", "No Collision", [0, 0.4, 1.0], 0.09, [0.0, 1.0, 0.0, 0.4], id=10000
-                )
+                col_val = rik.vars.collision_graph.get_collision_score_of_state(positions)
+                rik.vars.collision_graph.c.draw_all()
+                if col_val >= rik.vars.collision_graph.b_value:
+                    draw_text_in_rviz(
+                        marker_pub, "common_world", "Collision", [0, 0.4, 1.0], 0.09, [1.0, 0.0, 0.0, 0.4], id=10000
+                    )
+                else:
+                    draw_text_in_rviz(
+                        marker_pub, "common_world", "No Collision", [0, 0.4, 1.0], 0.09, [0.0, 1.0, 0.0, 0.4], id=10000
+                    )
 
         # draw_text_in_rviz()
 
